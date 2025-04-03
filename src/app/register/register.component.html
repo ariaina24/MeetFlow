@@ -1,0 +1,85 @@
+<div class="container">
+  <mat-grid-list cols="2" rowHeight="100vh" class="main-grid">
+    <mat-grid-tile class="illustration-tile">
+      <img src="images/meeting.jpg" alt="Illustration" class="illustration" />
+    </mat-grid-tile>
+
+    <mat-grid-tile class="form-tile">
+      <div class="form-container">
+        <mat-card class="register-card">
+          <h1 class="title">Join <span>Meet<span>Flow</span></span> 🎥</h1>
+          <p>Create your account to start collaborating!</p>
+
+          <mat-card-content>
+            <form [formGroup]="registerForm" (ngSubmit)="register()">
+              <mat-grid-list cols="2" rowHeight="6:3">
+                <mat-grid-tile>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Your LastName</mat-label>
+                    <input matInput formControlName="lastName" required />
+                    <mat-icon matSuffix>person</mat-icon>
+                  </mat-form-field>
+                </mat-grid-tile>
+                <mat-grid-tile>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Your FirstName</mat-label>
+                    <input matInput formControlName="firstName" required />
+                    <mat-icon matSuffix>person</mat-icon>
+                  </mat-form-field>
+                </mat-grid-tile>
+              </mat-grid-list>
+
+
+              <!-- Email Field -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Your email</mat-label>
+                <input matInput formControlName="email" (blur)="updateErrorMessage()" required />
+                <mat-icon matSuffix>email</mat-icon>
+                @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched) {
+                <mat-error>{{ errorMessage() }}</mat-error>
+                }
+              </mat-form-field>
+
+              <!-- Password Field -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Your password</mat-label>
+                <input matInput [type]="hide() ? 'password' : 'text'" formControlName="password" required />
+                <button mat-icon-button matSuffix (click)="clickEvent($event)" [attr.aria-label]="'Hide password'"
+                  [attr.aria-pressed]="hide()">
+                  <mat-icon>{{ hide() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                </button>
+              </mat-form-field>
+
+              <!-- Confirm Password Field -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Confirm your password</mat-label>
+                <input matInput [type]="hide() ? 'password' : 'text'" formControlName="confirmPassword" required />
+                <button mat-icon-button matSuffix (click)="clickEvent($event)" [attr.aria-label]="'Hide password'"
+                  [attr.aria-pressed]="hide()">
+                  <mat-icon>{{ hide() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                </button>
+                @if (registerForm.hasError('mismatch') && registerForm.get('confirmPassword')?.touched) {
+                <mat-error>Passwords do not match</mat-error>
+                }
+              </mat-form-field>
+
+              @if (errorMessage()) {
+              <p class="error-message">{{ errorMessage() }}</p>
+              }
+
+              <!-- Register Button -->
+              <button mat-raised-button color="primary" type="submit" [disabled]="registerForm.invalid">
+                Register
+              </button>
+
+              <!-- Link to Login Page -->
+              <p class="login-link">
+                Already have an account? <a routerLink="/login">Log in</a>
+              </p>
+            </form>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-grid-tile>
+  </mat-grid-list>
+</div>
