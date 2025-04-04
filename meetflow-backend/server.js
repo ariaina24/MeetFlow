@@ -1,21 +1,35 @@
 import express, { json } from 'express';
 import { connect, Schema, model } from 'mongoose';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import { hash, compare } from 'bcrypt';
-import dotenv from 'dotenv'; // Import dotenv as an ES module
 
-dotenv.config(); // Call config() to load environment variables
+dotenv.config();
 
 const app = express();
-app.use(cors());
+
+app.use(cors({
+  origin: 'http://localhost:4200',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
+}));
+
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
 app.use(json());
 
-// Connect to MongoDB
-connect('mongodb://ariaina:root@localhost:27017/meetflow')
+connect('mongodb://ariaina:root@localhost:27017/meetFlow', {
+  authSource: 'admin',
+})
   .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  });
 
-// User Schema
 const userSchema = new Schema({
   lastName: String,
   firstName: String,
@@ -25,9 +39,11 @@ const userSchema = new Schema({
 
 const User = model('User', userSchema);
 
-// Registration Endpoint
 app.post('/register', async (req, res) => {
   try {
+    if (!req.body) {
+      throw new Error('Request body is empty');
+    }
     console.log('Request body:', req.body);
     const { lastName, firstName, email, password } = req.body;
     if (!lastName || !firstName || !email || !password) {
@@ -50,7 +66,11 @@ app.post('/register', async (req, res) => {
 // Login Endpoint
 app.post('/login', async (req, res) => {
   try {
+    console.log('Request body:', req.body);
     const { email, password } = req.body;
+    if (!email || !password) {
+      throw new Error('Email and password are required');
+    }
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ error: 'Invalid email or password' });
@@ -64,6 +84,11 @@ app.post('/login', async (req, res) => {
     console.error('Error in /login:', error);
     res.status(500).json({ error: 'Login failed', details: error.message });
   }
+});
+
+app.use((err, req, res, next) => {
+  console.error('Global error:', err);
+  res.status(500).json({ error: 'Something went wrong', details: err.message });
 });
 
 const PORT = process.env.PORT || 3000;
