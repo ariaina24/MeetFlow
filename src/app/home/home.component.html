@@ -1,47 +1,10 @@
-<div class="container">
-  <mat-grid-list cols="2" rowHeight="100vh" class="main-grid">
-    <mat-grid-tile class="illustration-tile">
-      <img src="images/videoConf.jpg" alt="Illustration" class="illustration" />
-    </mat-grid-tile>
-
-    <mat-grid-tile class="form-tile">
-      <div class="form-container">
-        <mat-card class="login-card">
-          <h1 class="title">Welcome to <span>Meet<span>Flow</span></span> 🎥</h1>
-          <p>Join your colleagues in meetings by logging in!</p>
-
-          <mat-card-content>
-            <form [formGroup]="loginForm" (ngSubmit)="login()">
-              <!-- Champ Email -->
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Enter your email</mat-label>
-                <input matInput formControlName="email" (blur)="updateErrorMessage()" required />
-                <mat-icon matSuffix>email</mat-icon>
-                @if (loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched) {
-                <mat-error>{{ errorMessage() }}</mat-error>
-                }
-              </mat-form-field>
-
-              <!-- Champ Mot de passe -->
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Enter your password</mat-label>
-                <input matInput [type]="hide() ? 'password' : 'text'" formControlName="password" required />
-                <button mat-icon-button matSuffix (click)="clickEvent($event)" [attr.aria-label]="'Hide password'"
-                  [attr.aria-pressed]="hide()">
-                  <mat-icon>{{ hide() ? 'visibility_off' : 'visibility' }}</mat-icon>
-                </button>
-              </mat-form-field>
-
-              <button mat-raised-button color="primary" type="submit" [disabled]="loginForm.invalid">
-                Login
-              </button>
-              <p class="login-link">
-                Don't have an account yet ? <a routerLink="/register">Sign up</a>
-              </p>
-            </form>
-          </mat-card-content>
-        </mat-card>
-      </div>
-    </mat-grid-tile>
-  </mat-grid-list>
-</div>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Welcome to MeetFlow</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <p *ngIf="user">Hello, {{ user.firstName }} {{ user.lastName }}!</p>
+    <p>You are logged in!</p>
+    <button mat-raised-button color="warn" (click)="logout()">Logout</button>
+  </mat-card-content>
+</mat-card>

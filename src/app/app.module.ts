@@ -9,7 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
-import { HomeComponent } from './home/home.component';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 
 @NgModule({
@@ -24,8 +24,8 @@ import { HomeComponent } from './home/home.component';
     MatButtonModule,
     MatFormFieldModule,
     FormsModule,
-    HomeComponent,
-    AppComponent
+    AppComponent,
+    HttpClientModule
   ],
 })
 export class AppModule { }

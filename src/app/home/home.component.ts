@@ -1,81 +1,68 @@
-import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
-import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatGridListModule } from '@angular/material/grid-list';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { merge } from 'rxjs';
-import { RouterLink } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http'; // Import this
+import { Router } from '@angular/router';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../auth.service';
+import { CommonModule } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
-  standalone: true,
   imports: [
     MatCardModule,
-    MatInputModule,
     MatButtonModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatGridListModule,
-    ReactiveFormsModule,
-    RouterLink,
-    HttpClientModule, // Add this
+    HttpClientModule,
+    CommonModule,
+    MatProgressSpinnerModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css'],
+  styleUrl: './home.component.css',
 })
-export class HomeComponent {
-  loginForm: FormGroup;
-  hide = signal(true);
-  errorMessage = signal('');
+export class HomeComponent implements OnInit {
+  user: any = null;
+  errorMessage: string | null = null;
+  isLoading: boolean = true;
+  private apiUrl = 'http://localhost:3000';
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService
-  ) {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
+    private authService: AuthService,
+    private router: Router,
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.isLoading = true;
+    this.cdr.markForCheck();
+
+    this.http.get(`${this.apiUrl}/home`).pipe(
+      finalize(() => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: (response: any) => {
+        // console.log('Home response:', response);
+        this.user = response.user;
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        console.error('Home error:', error);
+        this.errorMessage = `Failed to load home page (${error.status}): ${error.error?.message || error.statusText}`;
+        this.cdr.markForCheck();
+      },
     });
-
-    merge(this.loginForm.get('email')!.statusChanges, this.loginForm.get('email')!.valueChanges)
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => this.updateErrorMessage());
   }
 
-  clickEvent(event: MouseEvent) {
-    this.hide.set(!this.hide());
-    event.stopPropagation();
-  }
-
-  updateErrorMessage() {
-    const emailControl = this.loginForm.get('email');
-    if (emailControl?.hasError('email')) {
-      this.errorMessage.set('Not a valid email');
-    } else {
-      this.errorMessage.set('');
-    }
-  }
-
-  login() {
-    if (this.loginForm.valid) {
-      const credentials = this.loginForm.value;
-      this.authService.login(credentials).subscribe({
-        next: (response) => {
-          console.log('Login successful:', response);
-          // Redirect to a dashboard or home page after login
-        },
-        error: (error) => {
-          console.error('Login failed:', error);
-          this.errorMessage.set(error.error?.error || 'Login failed. Please try again.');
-        },
-      });
-    }
+  logout() {
+    this.authService.logout();
   }
 }

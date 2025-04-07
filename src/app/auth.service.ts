@@ -1,20 +1,62 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
+import { tap, catchError, delay } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private apiUrl = 'http://localhost:3000';
+  private tokenKey = 'auth_token';
+  private isLoggingOut = false;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   register(user: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, user);
   }
 
   login(credentials: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, credentials);
+    return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
+      tap((response: any) => {
+        if (response && response.token) {
+          localStorage.setItem(this.tokenKey, response.token);
+          // console.log('Token stored in localStorage:', response.token);
+
+          setTimeout(() => {
+            this.router.navigate(['/home']);
+          }, 100);
+        }
+      }),
+      catchError(error => {
+        console.error('Login error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getToken(): string | null {
+    const token = localStorage.getItem(this.tokenKey);
+    // console.log('getToken called, returning:', token ? 'token exists' : 'no token');
+    return token;
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.getToken();
+  }
+
+  logout(): void {
+    if (this.isLoggingOut) return;
+
+    this.isLoggingOut = true;
+    // console.log('Logging out, removing token');
+    localStorage.removeItem(this.tokenKey);
+
+    setTimeout(() => {
+      this.router.navigate(['/login']);
+      this.isLoggingOut = false;
+    }, 100);
   }
 }
