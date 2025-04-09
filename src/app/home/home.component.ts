@@ -19,10 +19,11 @@ import { finalize } from 'rxjs/operators';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css',
+  styleUrls: ['./home.component.css'],
 })
 export class HomeComponent implements OnInit {
   user: any = null;
+  users: any[] = [];
   errorMessage: string | null = null;
   isLoading: boolean = true;
   private apiUrl = 'http://localhost:3000';
@@ -50,19 +51,40 @@ export class HomeComponent implements OnInit {
       })
     ).subscribe({
       next: (response: any) => {
-        // console.log('Home response:', response);
         this.user = response.user;
+        this.getUsers();
         this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('Home error:', error);
+        if (error.status == 403){
+          this.logout();
+        }
         this.errorMessage = `Failed to load home page (${error.status}): ${error.error?.message || error.statusText}`;
         this.cdr.markForCheck();
       },
     });
   }
 
+
+  getUsers(): void {
+    this.http.get<any[]>(`${this.apiUrl}/users`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    })
+    .subscribe({
+      next: (users) => {
+        this.users = users.filter(user => user.email !== this.user.email);
+      }
+
+    });
+  }
+
+
   logout() {
     this.authService.logout();
+  }
+
+  startPrivateChat(email: string): void {
+    this.router.navigate(['/chat-video'], { queryParams: { email } });
   }
 }

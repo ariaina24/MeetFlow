@@ -3,8 +3,25 @@
     <mat-card-title>Welcome to MeetFlow</mat-card-title>
   </mat-card-header>
   <mat-card-content>
-    <p *ngIf="user">Hello, {{ user.firstName }} {{ user.lastName }}!</p>
+    <p *ngIf="user">Hello, {{ user.lastName }} {{ user.firstName }}!</p>
     <p>You are logged in!</p>
     <button mat-raised-button color="warn" (click)="logout()">Logout</button>
+    <button mat-raised-button color="primary" (click)="getUsers()">Charger les utilisateurs</button>
+    <div *ngIf="users.length > 0">
+      <h3>Choose a user to chat with:</h3>
+      <ul>
+        <li *ngFor="let u of users" (click)="startPrivateChat(u.email)" style="cursor: pointer;">
+          {{ u.firstName }} {{ u.lastName }}
+        </li>
+      </ul>
+    </div>
+
+    <div *ngIf="isLoading">
+      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    </div>
+
+    <div *ngIf="errorMessage" style="color: red;">
+      {{ errorMessage }}
+    </div>
   </mat-card-content>
 </mat-card>

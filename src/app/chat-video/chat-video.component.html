@@ -1,0 +1,81 @@
+<div class="container">
+  <mat-card class="chat-video-card">
+    <mat-card-header>
+      <mat-card-title>Chat & Video Conference</mat-card-title>
+      <mat-card-subtitle *ngIf="selectedUser">
+        Talking with {{ selectedUser.firstName }} {{ selectedUser.lastName }}
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Section Vidéoconférence -->
+      <div class="video-section" *ngIf="isVideoCallActive">
+        <div class="video-container">
+          <!-- Vidéo locale -->
+          <div class="video-box">
+            <h4>You</h4>
+            <video #localVideo autoplay playsinline muted></video>
+          </div>
+          <!-- Vidéo distante -->
+          <div class="video-box">
+            <h4>{{ selectedUser?.firstName }} {{ selectedUser?.lastName }}</h4>
+            <video #remoteVideo autoplay playsinline></video>
+          </div>
+        </div>
+        <div class="video-controls">
+          <button mat-icon-button color="primary" (click)="toggleCamera()" [disabled]="!isVideoCallActive">
+            <mat-icon>{{ isCameraOn ? 'videocam' : 'videocam_off' }}</mat-icon>
+          </button>
+          <button mat-icon-button color="primary" (click)="toggleMicrophone()" [disabled]="!isVideoCallActive">
+            <mat-icon>{{ isMicOn ? 'mic' : 'mic_off' }}</mat-icon>
+          </button>
+          <button mat-raised-button color="warn" (click)="endCall()">End Call</button>
+        </div>
+      </div>
+
+      <!-- Bouton pour démarrer la vidéoconférence -->
+      <div class="start-video-call" *ngIf="!isVideoCallActive">
+        <button mat-raised-button color="primary" (click)="startVideoCall()">
+          Start Video Call
+        </button>
+      </div>
+
+      <!-- Section Chat -->
+      <div class="chat-section">
+        <div class="chat-messages">
+          <div *ngFor="let message of messages" class="message"
+            [ngClass]="{'sent': message.isSent, 'received': !message.isSent}">
+            <span class="message-sender">{{ message.isSent ? 'You' : selectedUser?.firstName }}</span>
+            <p>{{ message.text }}</p>
+            <span class="message-time">{{ message.time | date:'shortTime' }}</span>
+          </div>
+        </div>
+
+        <!-- Champ de saisie pour le chat -->
+        <div class="chat-input">
+          <mat-form-field appearance="fill" class="chat-input-field">
+            <mat-label>Type a message</mat-label>
+            <input matInput [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Type a message...">
+          </mat-form-field>
+          <button mat-icon-button color="primary" (click)="sendMessage()" [disabled]="!newMessage">
+            <mat-icon>send</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Spinner de chargement -->
+      <div *ngIf="isLoading" class="loading-spinner">
+        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+      </div>
+
+      <!-- Message d'erreur -->
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-raised-button color="warn" (click)="goBack()">Back to Home</button>
+    </mat-card-actions>
+  </mat-card>
+</div>

@@ -10,6 +10,7 @@ import { AuthService } from '../auth.service';
 import { RouterLink, Router } from '@angular/router';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { finalize } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
@@ -23,6 +24,7 @@ import { finalize } from 'rxjs/operators';
     ReactiveFormsModule,
     RouterLink,
     MatGridListModule,
+    CommonModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.component.html',

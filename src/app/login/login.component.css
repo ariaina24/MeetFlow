@@ -116,6 +116,15 @@ mat-error {
   margin-top: 5px;
 }
 
+.error-banner {
+  color: #f44336;
+  padding: 12px;
+  border-radius: 4px;
+  margin-top: -25px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .main-grid {

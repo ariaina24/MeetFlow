@@ -12,7 +12,6 @@
 
           <mat-card-content>
             <form [formGroup]="loginForm" (ngSubmit)="login()">
-              <!-- Champ Email -->
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Enter your email</mat-label>
                 <input matInput formControlName="email" (blur)="updateErrorMessage()" required />
@@ -22,7 +21,6 @@
                 }
               </mat-form-field>
 
-              <!-- Champ Mot de passe -->
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Enter your password</mat-label>
                 <input matInput [type]="hide() ? 'password' : 'text'" formControlName="password" required />
@@ -31,6 +29,10 @@
                   <mat-icon>{{ hide() ? 'visibility_off' : 'visibility' }}</mat-icon>
                 </button>
               </mat-form-field>
+
+              <div *ngIf="errorMessage" class="error-banner">
+                {{ errorMessage }}
+              </div>
 
               <button mat-raised-button color="primary" type="submit" [disabled]="loginForm.invalid">
                 Login
