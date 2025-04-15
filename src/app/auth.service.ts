@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { tap, catchError, delay } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { jwtDecode } from 'jwt-decode';
 
 @Injectable({
   providedIn: 'root',
@@ -26,7 +27,7 @@ export class AuthService {
           // console.log('Token stored in localStorage:', response.token);
 
           setTimeout(() => {
-            this.router.navigate(['/home']);
+            this.router.navigate(['/chat-video']);
           }, 100);
         }
       }),
@@ -41,6 +42,13 @@ export class AuthService {
     const token = localStorage.getItem(this.tokenKey);
     // console.log('getToken called, returning:', token ? 'token exists' : 'no token');
     return token;
+  }
+
+  getUserName(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+    const decoded: any = jwtDecode(token);
+    return decoded.firstName + ' ' + decoded.lastName;
   }
 
   isLoggedIn(): boolean {

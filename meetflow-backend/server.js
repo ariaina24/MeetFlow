@@ -76,12 +76,10 @@ const authenticateToken = (req, res, next) => {
   }
 };
 
-// Créer un serveur HTTP avec Express
 const server = app.listen(process.env.PORT || 3000, () => {
   console.log(`Server running on port ${process.env.PORT || 3000}`);
 });
 
-// Créer une instance de Socket.IO associée au serveur HTTP
 const io = new Server(server, {
   cors: {
     origin: 'http://localhost:4200',
@@ -93,12 +91,10 @@ const io = new Server(server, {
 
 io.on('connection', (socket) => {
   // console.log('User connected:', socket.id);
-
-  // Authentifier l'utilisateur
   socket.on('authenticate', ({ token }) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
-      socket.userId = decoded.id; // Stocker l'ID de l'utilisateur
+      socket.userId = decoded.id;
       // console.log('User authenticated:', decoded);
     } catch (error) {
       console.error('Authentication error:', error.message);
@@ -106,26 +102,22 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Joindre une salle spécifique
   socket.on('join-room', (roomId, userId) => {
     socket.join(roomId);
     console.log(`${userId} joined room: ${roomId}`);
     socket.to(roomId).emit('user-connected', userId);
   });
 
-  // Recevoir un message et l'envoyer à tous les utilisateurs de la même salle
   socket.on('send-message', (roomId, message) => {
     console.log('Message received:', message);
     socket.to(roomId).emit('receive-message', message);
   });
 
-  // Recevoir un message privé et l'envoyer à l'autre utilisateur
   socket.on('send-private-message', async (senderId, receiverId, message) => {
     try {
       const chatId = [senderId, receiverId].sort().join('-');
       console.log(`Private message from ${senderId} to ${receiverId}: ${message}`);
 
-      // Stocker le message dans la base de données
       const newMessage = new Message({
         senderId,
         receiverId,
@@ -134,7 +126,6 @@ io.on('connection', (socket) => {
       });
       await newMessage.save();
 
-      // Émettre le message à la salle de chat privé
       io.to(chatId).emit('receive-private-message', {
         senderId,
         receiverId,
@@ -146,14 +137,12 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Rejoindre un chat privé entre deux utilisateurs
   socket.on('join-private-chat', (userId1, userId2) => {
     const chatId = [userId1, userId2].sort().join('-');
     socket.join(chatId);
     // console.log(`${userId1} and ${userId2} joined private chat: ${chatId}`);
   });
 
-  // Gestion de la déconnexion
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
@@ -182,7 +171,6 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Login Endpoint (Générer un JWT)
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -199,7 +187,12 @@ app.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign(
-      { email: user.email, id: user._id },
+      {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName
+      },
       process.env.JWT_SECRET || 'your_jwt_secret',
       { expiresIn: '1h' }
     );
@@ -211,22 +204,6 @@ app.post('/login', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: 'Login failed', details: error.message });
-  }
-});
-
-app.get('/home', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const user = await User.findById(userId).select('-password');
-
-    if (!user) {
-      return res.status(404).json({ error: 'Utilisateur non trouvé' });
-    }
-
-    res.status(200).json({ message: 'Bienvenue sur la home', user });
-  } catch (error) {
-    console.error('Erreur dans /home :', error);
-    res.status(500).json({ error: 'Erreur serveur', details: error.message });
   }
 });
 
@@ -259,20 +236,18 @@ app.get('/one-user', authenticateToken, async (req, res) => {
 
 app.get('/messages', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.id; // ID de l'utilisateur connecté
-    const otherUserEmail = req.query.otherUserEmail; // Email de l'autre utilisateur
+    const userId = req.user.id;
+    const otherUserEmail = req.query.otherUserEmail;
 
     if (!otherUserEmail) {
       return res.status(400).json({ error: 'otherUserEmail parameter is required' });
     }
 
-    // Trouver l'autre utilisateur par email
     const otherUser = await User.findOne({ email: otherUserEmail });
     if (!otherUser) {
       return res.status(404).json({ error: 'Other user not found' });
     }
 
-    // Récupérer les messages entre les deux utilisateurs
     const messages = await Message.find({
       $or: [
         { senderId: userId, receiverId: otherUser._id },
@@ -290,7 +265,6 @@ app.get('/messages', authenticateToken, async (req, res) => {
   }
 });
 
-// Gestion des erreurs globales
 app.use((err, req, res, next) => {
   console.error('Global error:', err);
   res.status(500).json({ error: 'Something went wrong', details: err.message });

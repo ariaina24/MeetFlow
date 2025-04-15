@@ -1,18 +1,20 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../auth.service';
 import { SocketService } from '../socket.service';
-import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatGridListModule } from '@angular/material/grid-list';
 import { CommonModule } from '@angular/common';
 import { jwtDecode } from 'jwt-decode';
+import { catchError, of } from 'rxjs';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatListModule } from '@angular/material/list';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 interface Message {
   text: string;
@@ -30,204 +32,210 @@ interface User {
 @Component({
   selector: 'app-chat-video',
   imports: [
-    MatCardModule,
+    CommonModule,
+    FormsModule,
+    MatSidenavModule,
+    MatToolbarModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressSpinnerModule,
-    ReactiveFormsModule,
-    MatGridListModule,
-    CommonModule,
-    FormsModule,
+    MatListModule,
+    MatChipsModule,
   ],
   templateUrl: './chat-video.component.html',
   styleUrls: ['./chat-video.component.css'],
 })
-export class ChatVideoComponent implements OnInit, OnDestroy {
+export class ChatVideoComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('localVideo') localVideo!: ElementRef<HTMLVideoElement>;
-  @ViewChild('remoteVideo') remoteVideo!: ElementRef<HTMLVideoElement>;
+    @ViewChild('remoteVideo') remoteVideo!: ElementRef<HTMLVideoElement>;
+    @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
-  selectedUser: User | null = null;
-  messages: Message[] = [];
-  newMessage: string = '';
-  isLoading: boolean = false;
-  errorMessage: string | null = null;
-  private apiUrl = 'http://localhost:3000';
-  private currentUserId: string | null = null;
+    selectedUser: User | null = null;
+    messages: Message[] = [];
+    contacts: User[] = [];
+    newMessage: string = '';
+    groupedMessages: { date: string, messages: Message[] }[] = [];
+    isLoading: boolean = false;
+    errorMessage: string | null = null;
+    private apiUrl = 'http://localhost:3000';
+    private currentUserId: string | null = null;
 
-  // Vidéoconférence
-  isVideoCallActive: boolean = false;
-  isCameraOn: boolean = false;
-  isMicOn: boolean = false;
-  localStream: MediaStream | null = null;
+    constructor(
+      private route: ActivatedRoute,
+      private router: Router,
+      private http: HttpClient,
+      public authService: AuthService,
+      private socketService: SocketService
+    ) {}
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private http: HttpClient,
-    private authService: AuthService,
-    private socketService: SocketService
-  ) {}
-
-  ngOnInit(): void {
-    // Récupérer l'ID de l'utilisateur connecté à partir du token
-    const token = this.authService.getToken();
-    if (token) {
-      const decoded: any = jwtDecode(token);
-      this.currentUserId = decoded.id;
+    ngAfterViewInit() {
+      this.scrollToBottom();
     }
 
-    // Récupérer l'email de l'utilisateur sélectionné depuis les paramètres de la route
-    const userEmail = this.route.snapshot.queryParamMap.get('email');
-    if (userEmail) {
-      this.loadUserDetails(userEmail);
-    } else {
-      this.errorMessage = 'No user selected for chat.';
-    }
-
-    // Écouter les messages privés
-    this.socketService.onPrivateMessageReceived((data) => {
-      const isSent = data.senderId === this.currentUserId;
-      if (!isSent) {
-        this.messages.push({
-          text: data.message,
-          time: new Date(data.time),
-          isSent: false,
-        });
+    ngOnInit(): void {
+      const token = this.authService.getToken();
+      if (token) {
+        const decoded: any = jwtDecode(token);
+        this.currentUserId = decoded.id;
       }
-    });
-  }
 
-  ngOnDestroy(): void {
-    this.endCall();
-    this.socketService.disconnect();
-  }
+      const userEmail = this.route.snapshot.queryParamMap.get('email');
+      if (userEmail) {
+        this.loadUserDetails(userEmail);
+      } else {
+        this.errorMessage = 'No user selected for chat.';
+      }
 
-  // Charger les détails de l'utilisateur sélectionné
-  loadUserDetails(email: string): void {
-    this.isLoading = true;
-    this.http.get<User>(`${this.apiUrl}/one-user?email=${email}`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-    }).subscribe({
-      next: (user) => {
-        this.isLoading = false;
-        console.log('User received:', user);
-        if (user) {
-          this.selectedUser = user;
-          this.loadMessages();
-
-          // Rejoindre le chat privé
-          if (this.currentUserId) {
-            this.socketService.joinPrivateChat(this.currentUserId, this.selectedUser._id);
-          }
-        } else {
-          this.errorMessage = 'User not found.';
+      this.socketService.onPrivateMessageReceived((data) => {
+        const isSent = data.senderId === this.currentUserId;
+        if (!isSent) {
+          this.messages.push({
+            text: data.message,
+            time: new Date(data.time),
+            isSent: false,
+          });
+          this.groupMessagesByDate(this.messages);
         }
-      },
-      error: (err) => {
-        this.isLoading = false;
-        console.error('Error fetching user:', err);
-        this.errorMessage = 'Failed to load user details: ' + err.message;
-      }
-    });
-  }
-
-  // Charger les messages depuis la base de données
-  loadMessages(): void {
-    if (!this.selectedUser || !this.currentUserId) return;
-
-    this.http.get<any[]>(`${this.apiUrl}/messages?otherUserEmail=${this.selectedUser.email}`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-    }).subscribe({
-      next: (messages) => {
-        this.messages = messages.map((msg) => ({
-          text: msg.text,
-          time: new Date(msg.time),
-          isSent: msg.senderId._id === this.currentUserId,
-        }));
-      },
-      error: (err) => {
-        console.error('Error loading messages:', err);
-        this.errorMessage = 'Failed to load messages: ' + err.message;
-      },
-    });
-  }
-
-  // Envoyer un message
-  sendMessage(): void {
-    if (this.newMessage.trim() && this.currentUserId && this.selectedUser) {
-      const message: Message = {
-        text: this.newMessage,
-        time: new Date(),
-        isSent: true,
-      };
-      this.messages.push(message);
-
-      this.socketService.sendPrivateMessage(this.currentUserId, this.selectedUser._id, this.newMessage);
-      this.newMessage = '';
-    }
-  }
-
-  // Démarrer la vidéoconférence
-  async startVideoCall(): Promise<void> {
-    try {
-      this.isVideoCallActive = true;
-      this.isCameraOn = true;
-      this.isMicOn = true;
-
-      this.localStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
       });
 
-      if (this.localVideo && this.localVideo.nativeElement) {
-        this.localVideo.nativeElement.srcObject = this.localStream;
+      this.http.get<User[]>(`${this.apiUrl}/users`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
+      }).pipe(
+        catchError(error => {
+          if (error.status === 403) {
+            this.logout();
+          }
+          return of([]);
+        })
+      ).subscribe(users => {
+        this.contacts = users.filter(user => user._id !== this.currentUserId);
+      });
+    }
+
+
+    ngOnChanges() {
+      this.scrollToBottom();
+    }
+
+    scrollToBottom(): void {
+      try {
+        setTimeout(() => {
+          this.scrollContainer.nativeElement.scrollTo({
+            top: this.scrollContainer.nativeElement.scrollHeight,
+            behavior: 'smooth'
+          });
+
+        }, 0);
+      } catch (err) {
+        console.warn('Scroll failed:', err);
       }
-    } catch (err) {
-      this.errorMessage = 'Failed to start video call: ' + (err as Error).message;
-      this.endCall();
     }
-  }
 
-  // Basculer la caméra
-  toggleCamera(): void {
-    if (this.localStream) {
-      const videoTrack = this.localStream.getVideoTracks()[0];
-      videoTrack.enabled = !videoTrack.enabled;
-      this.isCameraOn = videoTrack.enabled;
+    ngOnDestroy(): void {
+      this.socketService.disconnect();
     }
-  }
 
-  // Basculer le microphone
-  toggleMicrophone(): void {
-    if (this.localStream) {
-      const audioTrack = this.localStream.getAudioTracks()[0];
-      audioTrack.enabled = !audioTrack.enabled;
-      this.isMicOn = audioTrack.enabled;
+    loadUserDetails(email: string): void {
+      this.isLoading = true;
+      this.http.get<User>(`${this.apiUrl}/one-user?email=${email}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+      }).subscribe({
+        next: (user) => {
+          this.isLoading = false;
+          if (user) {
+            this.selectedUser = user;
+            this.loadMessages();
+          } else {
+            this.errorMessage = 'User not found.';
+          }
+        },
+        error: (err) => {
+          this.isLoading = false;
+          this.errorMessage = 'Failed to load user details: ' + err.message;
+        }
+      });
     }
-  }
 
-  // Terminer l'appel
-  endCall(): void {
-    if (this.localStream) {
-      this.localStream.getTracks().forEach(track => track.stop());
-      this.localStream = null;
+    selectUser(user: User) {
+      this.selectedUser = user;
+      this.loadMessages();
+      this.socketService.joinPrivateChat(this.currentUserId!, user._id);
     }
-    if (this.localVideo && this.localVideo.nativeElement) {
-      this.localVideo.nativeElement.srcObject = null;
-    }
-    if (this.remoteVideo && this.remoteVideo.nativeElement) {
-      this.remoteVideo.nativeElement.srcObject = null;
-    }
-    this.isVideoCallActive = false;
-    this.isCameraOn = false;
-    this.isMicOn = false;
-  }
 
-  // Retour à la page d'accueil
-  goBack(): void {
-    this.endCall();
-    this.router.navigate(['/']);
-  }
+    loadMessages(): void {
+      if (!this.selectedUser || !this.currentUserId) return;
+
+      this.http.get<any[]>(`${this.apiUrl}/messages?otherUserEmail=${this.selectedUser.email}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+      }).subscribe({
+        next: (messages) => {
+          this.messages = messages.map((msg) => ({
+            text: msg.text,
+            time: new Date(msg.time),
+            isSent: msg.senderId._id === this.currentUserId,
+          }));
+          this.groupMessagesByDate(this.messages);
+          setTimeout(() => {
+            this.scrollToBottom();
+          }, 0);
+        },
+        error: (err) => {
+          this.errorMessage = 'Failed to load messages: ' + err.message;
+        },
+      });
+    }
+
+    sendMessage(): void {
+      if (this.newMessage.trim() && this.currentUserId && this.selectedUser) {
+        const message: Message = {
+          text: this.newMessage,
+          time: new Date(),
+          isSent: true,
+        };
+        this.messages.push(message);
+        this.socketService.sendPrivateMessage(this.currentUserId, this.selectedUser._id, this.newMessage);
+        this.newMessage = '';
+        this.groupMessagesByDate(this.messages);
+        this.scrollToBottom();
+      }
+    }
+
+    groupMessagesByDate(messages: Message[]): void {
+      const grouped: { date: string, messages: Message[] }[] = [];
+
+      messages.forEach(msg => {
+        const msgDate = new Date(msg.time);
+        const dateKey = this.getDateLabel(msgDate);
+
+        const existing = grouped.find(g => g.date === dateKey);
+        if (existing) {
+          existing.messages.push(msg);
+        } else {
+          grouped.push({ date: dateKey, messages: [msg] });
+        }
+      });
+
+      this.groupedMessages = grouped;
+    }
+
+    getDateLabel(date: Date): string {
+      const today = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(today.getDate() - 1);
+
+      const isToday = date.toDateString() === today.toDateString();
+      const isYesterday = date.toDateString() === yesterday.toDateString();
+
+      if (isToday) return 'Today';
+      if (isYesterday) return 'Yesterday';
+
+      return date.toLocaleDateString();
+    }
+
+    logout() {
+      this.authService.logout();
+    }
 }

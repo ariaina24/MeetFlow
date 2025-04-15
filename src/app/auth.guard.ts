@@ -23,6 +23,6 @@ export const publicGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  router.navigate(['/home']);
+  router.navigate(['/chat-video']);
   return false;
 };

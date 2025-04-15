@@ -33,12 +33,6 @@ export class AuthInterceptor implements HttpInterceptor {
         }
       });
 
-      // console.log('Request headers:',
-      //   Array.from(modifiedReq.headers.keys())
-      //     .map(key => `${key}: ${modifiedReq.headers.get(key)}`)
-      //     .join(', ')
-      // );
-
       return next.handle(modifiedReq).pipe(
         catchError((error: HttpErrorResponse) => {
           // console.log('Error in interceptor for URL:', req.url, 'Status:', error.status);

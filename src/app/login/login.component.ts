@@ -48,7 +48,7 @@ export class LoginComponent {
     });
 
     if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/home']);
+      this.router.navigate(['/chat-video']);
     }
   }
 

@@ -127,7 +127,6 @@ mat-error {
   text-decoration: underline;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .main-grid {
     display: flex;

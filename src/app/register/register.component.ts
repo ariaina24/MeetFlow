@@ -9,7 +9,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractContro
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { first, merge } from 'rxjs';
 import { RouterLink, Router } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http'; // Import this
+import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../auth.service';
 
 @Component({
@@ -24,7 +24,7 @@ import { AuthService } from '../auth.service';
     MatGridListModule,
     ReactiveFormsModule,
     RouterLink,
-    HttpClientModule, // Add this
+    HttpClientModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './register.component.html',

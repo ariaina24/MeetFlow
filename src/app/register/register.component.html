@@ -29,8 +29,6 @@
                 </mat-grid-tile>
               </mat-grid-list>
 
-
-              <!-- Email Field -->
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Your email</mat-label>
                 <input matInput formControlName="email" (blur)="updateErrorMessage()" required />
@@ -40,7 +38,6 @@
                 }
               </mat-form-field>
 
-              <!-- Password Field -->
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Your password</mat-label>
                 <input matInput [type]="hide() ? 'password' : 'text'" formControlName="password" required />
@@ -50,7 +47,6 @@
                 </button>
               </mat-form-field>
 
-              <!-- Confirm Password Field -->
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Confirm your password</mat-label>
                 <input matInput [type]="hide() ? 'password' : 'text'" formControlName="confirmPassword" required />
@@ -67,12 +63,10 @@
               <p class="error-message">{{ errorMessage() }}</p>
               }
 
-              <!-- Register Button -->
               <button mat-raised-button color="primary" type="submit" [disabled]="registerForm.invalid">
                 Register
               </button>
 
-              <!-- Link to Login Page -->
               <p class="login-link">
                 Already have an account? <a routerLink="/login">Log in</a>
               </p>
