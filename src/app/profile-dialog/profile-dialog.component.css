@@ -1,0 +1,142 @@
+/* Reset des styles de base */
+.mat-dialog-container {
+  padding: 0 !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+.profile-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 45px;
+  min-width: 70px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.profile-dialog-content h1{
+  margin: 0 auto;
+}
+
+.profile-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 0.5rem auto;
+  border: 3px solid #7e57c2;
+  box-shadow: 0 3px 10px rgba(125, 87, 194, 0.2);
+  display: block;
+}
+
+/* Champs de formulaire */
+.mat-form-field {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.mat-form-field-appearance-outline .mat-form-field-outline {
+  color: #5e35b1;
+}
+
+.mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  color: #7e57c2;
+}
+
+.mat-input-element {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+/* Zone d'upload de photo */
+.photo-upload-container {
+  margin: 0;
+  margin-top: -20px;
+}
+
+.photo-upload {
+  position: relative;
+  margin-top: 1.5em;
+}
+
+.photo-upload label {
+  position: absolute;
+  top: -0.75em;
+  left: 0.75em;
+  background: white;
+  padding: 0 0.5em;
+  font-size: 0.77em;
+  color: #000000;
+  z-index: 1;
+}
+
+.photo-upload input[type="file"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #0000008f;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 1em;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.photo-upload input[type="file"]:hover {
+  border-color:#7e57c2;
+}
+
+/* Boutons */
+.mat-dialog-actions {
+  padding: 20px;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid #eee;
+}
+
+button[mat-raised-button] {
+  border: 1px solid #5e35b1;
+  background: transparent;
+  color:#7e57c2;
+  padding: 10px;
+  border-radius: 5px;
+  margin-left: 8px;
+}
+
+button[mat-flat-button] {
+  background-color:#7e57c2;
+  border: 1px solid #5e35b1;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-left: 10px;
+}
+
+button[mat-raised-button]:hover {
+  background: rgba(126, 87, 194, 0.04);
+}
+
+button[mat-flat-button]:hover {
+  background-color: #5e35b1;
+}
+
+/* Titre */
+.mat-dialog-title {
+  margin: 0 0 1rem 0;
+  padding: 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #5e35b1;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .profile-dialog-content {
+    min-width: 280px;
+    padding: 16px;
+  }
+
+  .profile-photo {
+    width: 100px;
+    height: 100px;
+  }
+}

@@ -2,8 +2,13 @@
   <div class="chat-container">
     <div class="sidebar">
       <div class="sidebar-header">
-        <h1 class="title"><strong><span>MEET<span>FLOW</span></span> 🎥</strong></h1>
-        <span class="admin-name">{{ authService.getUserName() }}</span>
+        <div>
+          <h1 class="title"><strong><span>MEET<span>FLOW</span></span> 🎥</strong></h1>
+          <span class="admin-name">{{ authService.getUserName() }}</span>
+        </div>
+        <button (click)="openProfileModal()">
+          <img [src]="photoUrl" alt="Photo de profil" class="profil-pic-sidebar" />
+        </button>
       </div>
 
       <mat-form-field appearance="outline" class="search-field">
@@ -16,11 +21,33 @@
         <mat-list-item
           *ngFor="let contact of contacts"
           class="contact-item"
-          (click)="selectUser(contact)">
-          <div mat-line class="contact-name">{{ contact.firstName }} {{ contact.lastName }}</div>
-          <div mat-line class="contact-message">Last message preview...</div>
+          (click)="selectUser(contact)"
+        >
+          <div>
+            <div mat-line class="contact-name">{{ contact.firstName }} {{ contact.lastName }}</div>
+            <div mat-line class="contact-message">Last message preview...</div>
+          </div>
         </mat-list-item>
       </mat-list>
+
+      <div class="sidebar-footer">
+        <button mat-button [matMenuTriggerFor]="userMenu" class="profile-menu-btn">
+          <mat-icon>account_circle</mat-icon>
+          <span>Mon compte</span>
+        </button>
+
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item (click)="openProfileModal()">
+            <mat-icon>person</mat-icon>
+            <span>Profil</span>
+          </button>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Déconnexion</span>
+          </button>
+        </mat-menu>
+      </div>
+
     </div>
 
     <div class="chat-area">

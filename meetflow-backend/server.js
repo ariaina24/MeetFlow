@@ -5,6 +5,10 @@ import dotenv from 'dotenv';
 import { hash, compare } from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Server } from 'socket.io';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
@@ -12,7 +16,7 @@ const app = express();
 
 app.use(cors({
   origin: 'http://localhost:4200',
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
@@ -33,12 +37,13 @@ connect('mongodb://ariaina:root@localhost:27017/meetFlow', {
     process.exit(1);
   });
 
-const userSchema = new Schema({
-  lastName: String,
-  firstName: String,
-  email: { type: String, unique: true },
-  password: String,
-});
+  const userSchema = new Schema({
+    lastName: String,
+    firstName: String,
+    email: { type: String, unique: true },
+    password: String,
+    photoUrl: { type: String, default: null },
+  });
 
 const User = model('User', userSchema);
 
@@ -144,7 +149,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+    // console.log('User disconnected:', socket.id);
   });
 });
 
@@ -188,10 +193,11 @@ app.post('/login', async (req, res) => {
 
     const token = jwt.sign(
       {
-        id: user.id,
+        id: user._id,
         email: user.email,
         firstName: user.firstName,
-        lastName: user.lastName
+        lastName: user.lastName,
+        photoUrl: user.photoUrl || '', // Inclure photoUrl
       },
       process.env.JWT_SECRET || 'your_jwt_secret',
       { expiresIn: '1h' }
@@ -199,7 +205,13 @@ app.post('/login', async (req, res) => {
 
     res.status(200).json({
       message: 'Login successful',
-      user: { lastName: user.lastName, firstName: user.firstName, email: user.email },
+      user: {
+        _id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        photoUrl: user.photoUrl || '',
+      },
       token,
     });
   } catch (error) {
@@ -223,7 +235,7 @@ app.get('/one-user', authenticateToken, async (req, res) => {
     if (!email) {
       throw new Error('Paramètre email requis');
     }
-    const user = await User.findOne({ email }).select('firstName lastName email _id');
+    const user = await User.findOne({ email }).select('firstName lastName email _id photoUrl');
     if (!user) {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
@@ -265,7 +277,95 @@ app.get('/messages', authenticateToken, async (req, res) => {
   }
 });
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const uploadsDir = path.join(__dirname, 'Uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+
+// Configuration de multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const userId = req.user.id; // ID de l'utilisateur authentifié
+    const timestamp = Date.now();
+    const extension = path.extname(file.originalname); // Extrait l'extension (ex: .jpg)
+    const filename = `${userId}-${timestamp}${extension}`; // Ex: user123-16987654321.jpg
+    cb(null, filename);
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    // Accepter uniquement les images
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Type de fichier non autorisé. Seules les images sont acceptées.'));
+    }
+  },
+});
+
+app.put('/update-profile', authenticateToken, upload.single('photo'), async (req, res) => {
+  try {
+    const userId = req.user.id;
+    console.log('Données reçues:', {
+      body: req.body,
+      file: req.file,
+    });
+
+    const { firstName, lastName } = req.body;
+
+    // Rejeter les requêtes avec des valeurs undefined ou vides
+    if (!firstName || !lastName || firstName === 'undefined' || lastName === 'undefined') {
+      console.log('Requête ignorée : firstName ou lastName invalide');
+      return res.status(400).json({ error: 'firstName et lastName sont requis et ne doivent pas être "undefined"' });
+    }
+
+    const update = {};
+    if (firstName) update.firstName = firstName;
+    if (lastName) update.lastName = lastName;
+
+    if (req.file) {
+      update.photoUrl = `/Uploads/${req.file.filename}`;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, { $set: update }, { new: true });
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    console.log('Utilisateur mis à jour dans la base:', updatedUser);
+
+    const token = jwt.sign(
+      {
+        id: updatedUser._id,
+        email: updatedUser.email,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        photoUrl: updatedUser.photoUrl,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    res.json({ ...updatedUser.toObject(), token });
+  } catch (error) {
+    console.error('Erreur dans /update-profile:', error);
+    res.status(500).json({ error: 'Échec de la mise à jour', details: error.message });
+  }
+});
+
 app.use((err, req, res, next) => {
   console.error('Global error:', err);
   res.status(500).json({ error: 'Something went wrong', details: err.message });
 });
+
+app.use('/Uploads', express.static(path.join(__dirname, 'Uploads')));

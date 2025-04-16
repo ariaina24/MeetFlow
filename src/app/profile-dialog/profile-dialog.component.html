@@ -1,0 +1,48 @@
+<div mat-dialog-content class="profile-dialog-content">
+  <h1 mat-dialog-title>Mon Profil</h1>
+  <img
+    *ngIf="photoPreview; else defaultImage"
+    [src]="photoPreview"
+    class="profile-photo"
+    alt="Photo de profil"
+  />
+  <ng-template #defaultImage>
+    <img src="images/default-men.jpg" class="profile-photo" alt="Photo par défaut" />
+  </ng-template>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Nom</mat-label>
+    <input matInput [(ngModel)]="data.lastName" required>
+    <mat-error *ngIf="!data.lastName">Le nom est requis</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Prénom</mat-label>
+    <input matInput [(ngModel)]="data.firstName" required>
+    <mat-error *ngIf="!data.firstName">Le prénom est requis</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Email</mat-label>
+    <input matInput [ngModel]="data.email" disabled>
+  </mat-form-field>
+
+  <div class="photo-upload-container">
+    <div class="photo-upload">
+      <label for="fileUpload">Photo de profil</label>
+      <input id="fileUpload" type="file" (change)="onPhotoSelected($event)" accept="image/jpeg,image/png,image/gif">
+    </div>
+  </div>
+
+  <div mat-dialog-actions align="end">
+    <button mat-raised-button color="warn" (click)="dialogRef.close()">Annuler</button>
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="save()"
+      [disabled]="isSaving || !data.firstName || !data.lastName"
+    >
+      {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
+    </button>
+  </div>
+</div>
