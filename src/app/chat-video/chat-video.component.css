@@ -184,6 +184,15 @@ body {
   box-shadow: 0 3px 10px rgba(125, 87, 194, 0.2);
 }
 
+.profil-pic-header{
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 3px 10px rgba(125, 87, 194, 0.2);
+  margin-right: 15px;
+}
+
 .status {
   background-color: green;
   width: 10px;

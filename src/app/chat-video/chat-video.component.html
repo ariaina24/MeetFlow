@@ -24,7 +24,7 @@
           (click)="selectUser(contact)"
         >
           <div>
-            <div mat-line class="contact-name">{{ contact.firstName }} {{ contact.lastName }}</div>
+            <div mat-line class="contact-name">{{ contact.lastName }} {{ contact.firstName }}</div>
             <div mat-line class="contact-message">Last message preview...</div>
           </div>
         </mat-list-item>
@@ -59,8 +59,8 @@
 
       <ng-container *ngIf="selectedUser">
         <div class="chat-header">
-          <img src="images/default-men.jpg" alt="profil" class="profil-pic">
-          <h1>{{ selectedUser.firstName }} {{ selectedUser.lastName }}</h1>
+          <img [src]="selectedUser.photoUrl" alt="profil" class="profil-pic-header">
+          <h1>{{ selectedUser.lastName }} {{ selectedUser.firstName }}</h1>
           <span class="status"></span>
         </div>
 
@@ -76,7 +76,7 @@
 
             <div *ngFor="let msg of group.messages" class="message-row" [ngClass]="{'sent': msg.isSent}">
               <div class="message-avatar" *ngIf="!msg.isSent">
-                <img [src]="'images/default-men.jpg'" alt="avatar">
+                <img [src]="selectedUser.photoUrl" alt="profil" class="profil-pic">
               </div>
 
               <div class="message-wrapper">

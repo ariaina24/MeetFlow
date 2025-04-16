@@ -38,3 +38,5 @@ testem.log
 Thumbs.db
 
 /meetflow-backend/node_modules
+/meetflow-backend/Uploads/
+/meetflow-backend/.env

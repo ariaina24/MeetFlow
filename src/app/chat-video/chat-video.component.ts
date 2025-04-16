@@ -95,14 +95,6 @@ export class ChatVideoComponent implements OnInit, OnDestroy, AfterViewInit {
         lastName: decoded.lastName,
         photoUrl: decoded.photoUrl || '',
       };
-      console.log('Utilisateur initialisé à partir du token:', this.user);
-    }
-
-    const userEmail = this.route.snapshot.queryParamMap.get('email');
-    if (userEmail) {
-      this.loadUserDetails(userEmail);
-    } else {
-      this.errorMessage = 'No user selected for chat.';
     }
 
     this.socketService.onPrivateMessageReceived((data) => {
@@ -129,7 +121,15 @@ export class ChatVideoComponent implements OnInit, OnDestroy, AfterViewInit {
         return of([]);
       })
     ).subscribe(users => {
-      this.contacts = users.filter(user => user._id !== this.currentUserId);
+      console.log(users)
+      this.contacts = users
+      .filter(user => user._id !== this.currentUserId)
+      .map(user => ({
+        ...user,
+        photoUrl: user.photoUrl
+          ? `http://localhost:3000${user.photoUrl}`
+          : 'images/default-men.jpg'
+      }));
     });
 
     this.authService.user$.subscribe(user => {
@@ -146,12 +146,12 @@ export class ChatVideoComponent implements OnInit, OnDestroy, AfterViewInit {
           lastName: user.lastName || this.user?.lastName || '',
           photoUrl: user.photoUrl || this.user?.photoUrl || '',
         };
-        console.log('Données utilisateur mises à jour:', {
-          firstName: this.firstName,
-          lastName: this.lastName,
-          photoUrl: this.photoUrl,
-          user: this.user,
-        });
+        // console.log('Données utilisateur mises à jour:', {
+        //   firstName: this.firstName,
+        //   lastName: this.lastName,
+        //   photoUrl: this.photoUrl,
+        //   user: this.user,
+        // });
       }
     });
   }
@@ -177,27 +177,6 @@ export class ChatVideoComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy(): void {
     this.socketService.disconnect();
-  }
-
-  loadUserDetails(email: string): void {
-    this.isLoading = true;
-    this.http.get<User>(`${this.apiUrl}/one-user?email=${email}`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-    }).subscribe({
-      next: (user) => {
-        this.isLoading = false;
-        if (user) {
-          this.selectedUser = user;
-          this.loadMessages();
-        } else {
-          this.errorMessage = 'User not found.';
-        }
-      },
-      error: (err) => {
-        this.isLoading = false;
-        this.errorMessage = 'Failed to load user details: ' + err.message;
-      }
-    });
   }
 
   selectUser(user: User) {

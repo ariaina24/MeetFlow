@@ -221,7 +221,7 @@ app.post('/login', async (req, res) => {
 
 app.get('/users', authenticateToken, async (req, res) => {
   try {
-    const users = await User.find().select('firstName lastName email');
+    const users = await User.find().select('firstName lastName email photoUrl');
     res.status(200).json(users);
     // console.log(users)
   } catch (error) {

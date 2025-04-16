@@ -72,7 +72,7 @@ public user$ = this.currentUserSubject.asObservable();
     const token = this.getToken();
     if (!token) return null;
     const decoded: any = jwtDecode(token);
-    return decoded.firstName + ' ' + decoded.lastName;
+    return decoded.lastName + ' ' + decoded.firstName;
   }
 
   setUserFromToken(token: string) {
