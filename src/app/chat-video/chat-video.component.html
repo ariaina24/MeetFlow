@@ -25,7 +25,9 @@
         >
           <div>
             <div mat-line class="contact-name">{{ contact.lastName }} {{ contact.firstName }}</div>
-            <div mat-line class="contact-message">Last message preview...</div>
+            <div mat-line class="contact-message">
+              {{ getLastMessageForContact(contact._id) || 'Aucun message' }}
+            </div>
           </div>
         </mat-list-item>
       </mat-list>

@@ -1,5 +1,5 @@
 import express, { json } from 'express';
-import { connect, Schema, model } from 'mongoose';
+import mongoose, { connect, Schema, model } from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { hash, compare } from 'bcrypt';
@@ -360,6 +360,70 @@ app.put('/update-profile', authenticateToken, upload.single('photo'), async (req
   } catch (error) {
     console.error('Erreur dans /update-profile:', error);
     res.status(500).json({ error: 'Échec de la mise à jour', details: error.message });
+  }
+});
+
+app.get('/last-messages', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Agrégation pour récupérer le dernier message par contact
+    const lastMessages = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { senderId: new mongoose.Types.ObjectId(userId) },
+            { receiverId: new mongoose.Types.ObjectId(userId) }
+          ]
+        }
+      },
+      {
+        $sort: { time: -1 }
+      },
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ['$senderId', new mongoose.Types.ObjectId(userId)] },
+              '$receiverId',
+              '$senderId'
+            ]
+          },
+          lastMessage: { $first: '$text' },
+          time: { $first: '$time' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $unwind: '$user'
+      },
+      {
+        $project: {
+          contactId: '$user._id',
+          email: '$user.email',
+          firstName: '$user.firstName',
+          lastName: '$user.lastName',
+          photoUrl: '$user.photoUrl',
+          lastMessage: 1,
+          time: 1
+        }
+      },
+      {
+        $sort: { time: -1 }
+      }
+    ]);
+
+    res.json(lastMessages);
+  } catch (error) {
+    console.error('Error fetching last messages:', error);
+    res.status(500).json({ error: 'Could not fetch last messages' });
   }
 });
 

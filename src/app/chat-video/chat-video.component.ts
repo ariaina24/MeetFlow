@@ -63,6 +63,8 @@ export class ChatVideoComponent implements OnInit, OnDestroy, AfterViewInit {
   groupedMessages: { date: string, messages: Message[] }[] = [];
   isLoading: boolean = false;
   errorMessage: string | null = null;
+  lastMessages: any[] = [];
+
   private apiUrl = 'http://localhost:3000';
   private currentUserId: string | null = null;
 
@@ -105,6 +107,7 @@ export class ChatVideoComponent implements OnInit, OnDestroy, AfterViewInit {
           time: new Date(data.time),
           isSent: false,
         });
+        this.updateLastMessage(data.senderId, data.message, data.time);
         this.groupMessagesByDate(this.messages);
       }
     });
@@ -121,7 +124,6 @@ export class ChatVideoComponent implements OnInit, OnDestroy, AfterViewInit {
         return of([]);
       })
     ).subscribe(users => {
-      console.log(users)
       this.contacts = users
       .filter(user => user._id !== this.currentUserId)
       .map(user => ({
@@ -154,6 +156,8 @@ export class ChatVideoComponent implements OnInit, OnDestroy, AfterViewInit {
         // });
       }
     });
+
+    this.fetchLastMessages();
   }
 
 
@@ -216,6 +220,7 @@ export class ChatVideoComponent implements OnInit, OnDestroy, AfterViewInit {
         isSent: true,
       };
       this.messages.push(message);
+      this.updateLastMessage(this.selectedUser!._id, message.text, message.time);
       this.socketService.sendPrivateMessage(this.currentUserId, this.selectedUser._id, this.newMessage);
       this.newMessage = '';
       this.groupMessagesByDate(this.messages);
@@ -239,6 +244,53 @@ export class ChatVideoComponent implements OnInit, OnDestroy, AfterViewInit {
     });
 
     this.groupedMessages = grouped;
+  }
+
+  fetchLastMessages() {
+    const token = localStorage.getItem('auth_token');
+    this.http.get<any[]>(`${this.apiUrl}/last-messages`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).subscribe({
+      next: (messages) => {
+        this.lastMessages = messages;
+        this.sortContactsByLastMessage();
+      },
+      error: (err) => {
+        console.error('Erreur lors de la récupération des derniers messages :', err);
+      }
+    });
+  }
+
+  getLastMessageForContact(contactId: string): string | null {
+    const found = this.lastMessages.find(msg => msg.contactId === contactId);
+    return found ? found.lastMessage : null;
+  }
+
+  updateLastMessage(contactId: string, message: string, time: Date | string) {
+    const existing = this.lastMessages.find(m => m.contactId === contactId);
+    if (existing) {
+      existing.lastMessage = message;
+      existing.time = time;
+    } else {
+      this.lastMessages.push({
+        contactId,
+        lastMessage: message,
+        time
+      });
+    }
+    this.sortContactsByLastMessage();
+  }
+
+  sortContactsByLastMessage() {
+    this.contacts.sort((a, b) => {
+      const msgA = this.lastMessages.find(m => m.contactId === a._id);
+      const msgB = this.lastMessages.find(m => m.contactId === b._id);
+
+      const timeA = msgA ? new Date(msgA.time).getTime() : 0;
+      const timeB = msgB ? new Date(msgB.time).getTime() : 0;
+
+      return timeB - timeA; // plus récent en haut
+    });
   }
 
   getDateLabel(date: Date): string {
