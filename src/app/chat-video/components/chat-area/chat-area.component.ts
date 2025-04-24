@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MessageInputComponent } from '../message-input/message-input.component';
+import { JoinCallComponent } from "../join-call/join-call.component";
 
 @Component({
   selector: 'app-chat-area',
@@ -19,7 +20,8 @@ import { MessageInputComponent } from '../message-input/message-input.component'
     MatButtonModule,
     MatIconModule,
     MessageInputComponent,
-  ],
+    JoinCallComponent
+],
   templateUrl: './chat-area.component.html',
   styleUrls: ['./chat-area.component.css'],
 })

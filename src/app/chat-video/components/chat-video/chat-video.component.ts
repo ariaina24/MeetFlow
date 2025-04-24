@@ -76,9 +76,7 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {
-    // Socket cleanup handled in ChatService or child components
-  }
+  ngOnDestroy(): void {}
 
   selectUser(user: User): void {
     this.selectedUser = user;

@@ -44,6 +44,10 @@
   color: #aa64cd;
 }
 
+.title a{
+  text-decoration: none;
+}
+
 .search-field {
   padding: 16px;
   width: calc(100% - 32px);

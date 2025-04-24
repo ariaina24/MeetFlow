@@ -1,0 +1,13 @@
+
+.join-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.join-call-form {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 0.5rem;
+  margin: 0 auto;
+}
