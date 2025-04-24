@@ -1,0 +1,17 @@
+<div class="container">
+  <div class="chat-container">
+    <app-sidebar
+      [user]="user"
+      [contacts]="contacts"
+      [lastMessages]="lastMessages"
+      (userSelected)="selectUser($event)"
+      (openProfile)="openProfileModal()"
+      (logout)="logout()"
+    ></app-sidebar>
+    <app-chat-area
+      [user]="user"
+      [selectedUser]="selectedUser"
+      [lastMessages]="lastMessages"
+    ></app-chat-area>
+  </div>
+</div>

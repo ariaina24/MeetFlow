@@ -20,21 +20,6 @@ export class SocketService {
     }
   }
 
-  // Rejoindre une salle
-  joinRoom(roomId: string, userId: string): void {
-    this.socket.emit('join-room', roomId, userId);
-  }
-
-  // Envoyer un message dans une salle
-  sendMessage(roomId: string, message: string): void {
-    this.socket.emit('send-message', roomId, message);
-  }
-
-  // Recevoir un message d'une salle
-  onMessageReceived(callback: (message: string) => void): void {
-    this.socket.on('receive-message', callback);
-  }
-
   // Écouter la connexion d'un utilisateur
   onUserConnected(callback: (userId: string) => void): void {
     this.socket.on('user-connected', callback);

@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../shared/auth.service';
 import { RouterLink, Router } from '@angular/router';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { finalize } from 'rxjs/operators';

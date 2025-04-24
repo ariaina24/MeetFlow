@@ -10,7 +10,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { first, merge } from 'rxjs';
 import { RouterLink, Router } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../shared/auth.service';
 
 @Component({
   selector: 'app-register',

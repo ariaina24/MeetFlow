@@ -4,7 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../../../shared/auth.service';
 
 @Component({
   selector: 'app-profile-dialog',
@@ -29,7 +29,7 @@ export class ProfileDialogComponent {
   ) {
     console.log('Données initiales MAT_DIALOG_DATA:', this.data);
     if (this.data?.photoUrl) {
-      this.photoPreview = `http://localhost:3000${this.data.photoUrl}`;
+      this.photoPreview = `${this.data.photoUrl}`;
       console.log('photoPreview initialisé:', this.photoPreview);
     } else {
       console.log('Aucun photoUrl dans MAT_DIALOG_DATA');

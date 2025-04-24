@@ -1,0 +1,15 @@
+<mat-list class="contact-list">
+  <mat-list-item
+    *ngFor="let user of sortedContacts"
+    class="contact-item"
+    (click)="selectUser(user)"
+  >
+    <div>
+      <div mat-line class="contact-name">{{ user.lastName }} {{ user.firstName }}</div>
+      <div mat-line class="contact-message">
+        {{ getLastMessage(user._id) || 'Aucun message' }}
+        <span class="timestamp" *ngIf="getLastMessageTime(user._id)">{{ getLastMessageTime(user._id) }}</span>
+      </div>
+    </div>
+  </mat-list-item>
+</mat-list>

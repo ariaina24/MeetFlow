@@ -1,0 +1,9 @@
+<div class="chat-input">
+  <mat-form-field appearance="outline" class="chat-input-field">
+    <mat-label>Type message here...</mat-label>
+    <input matInput [(ngModel)]="newMessage" (keyup.enter)="sendMessage()">
+  </mat-form-field>
+  <button mat-icon-button color="primary" (click)="sendMessage()" [disabled]="!newMessage">
+    <mat-icon>send</mat-icon>
+  </button>
+</div>
