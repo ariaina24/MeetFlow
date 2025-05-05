@@ -21,7 +21,7 @@ export class ChatService {
   fetchContacts(): Observable<User[]> {
     const token = this.authService.getToken();
     return this.http
-      .get<User[]>(`${this.apiUrl}/users`, {
+      .get<User[]>(`${this.apiUrl}/api/users`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .pipe(
@@ -36,14 +36,14 @@ export class ChatService {
 
   fetchLastMessages(): Observable<any[]> {
     const token = this.authService.getToken();
-    return this.http.get<any[]>(`${this.apiUrl}/last-messages`, {
+    return this.http.get<any[]>(`${this.apiUrl}/api/messages/last-messages`, {
       headers: { Authorization: `Bearer ${token}` },
     });
   }
 
   loadMessages(otherUserEmail: string): Observable<ApiMessage[]> {
     const token = this.authService.getToken();
-    return this.http.get<ApiMessage[]>(`${this.apiUrl}/messages?otherUserEmail=${otherUserEmail}`, {
+    return this.http.get<ApiMessage[]>(`${this.apiUrl}/api/messages?otherUserEmail=${otherUserEmail}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
   }

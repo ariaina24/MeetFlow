@@ -56,13 +56,14 @@
   padding: 20px;
   height: 75%;
   overflow-y: auto;
+  overflow-x: hidden;
   background: #f9f9f9;
 }
 
 .message-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: flex-end;
   margin-bottom: 12px;
 }
 

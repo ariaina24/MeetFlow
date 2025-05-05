@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { tap, catchError, delay } from 'rxjs/operators';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -11,17 +12,17 @@ export class AuthService {
   private apiUrl = 'http://localhost:3000';
   private tokenKey = 'auth_token';
   private isLoggingOut = false;
-  private currentUserSubject = new BehaviorSubject<any>(this.getUser());
-public user$ = this.currentUserSubject.asObservable();
+  private currentUserSubject = new BehaviorSubject<any>(this.getUserFromToken());
+  public user$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient, private router: Router) {}
 
   register(user: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, user);
+    return this.http.post(`${this.apiUrl}/api/auth/register`, user);
   }
 
   login(credentials: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
+    return this.http.post(`${this.apiUrl}/api/auth/login`, credentials).pipe(
       tap((response: any) => {
         if (response && response.token) {
           localStorage.setItem(this.tokenKey, response.token);
@@ -40,42 +41,40 @@ public user$ = this.currentUserSubject.asObservable();
     );
   }
 
-  private fetchUserDetails(email: string, token: string) {
-  this.http
-    .get(`${this.apiUrl}/one-user?email=${email}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    .subscribe({
-      next: (user: any) => {
-        this.currentUserSubject.next({
-          id: user._id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          photoUrl: user.photoUrl || '',
-        });
-        console.log('Données utilisateur récupérées:', user);
-      },
-      error: (error) => {
-        console.error('Erreur lors de la récupération des détails utilisateur:', error);
-      },
-    });
-}
+  private fetchUserDetails(email: string, token: string): void {
+    this.http
+      .get(`${this.apiUrl}/api/users/one-user?email=${email}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .subscribe({
+        next: (user: any) => {
+          this.currentUserSubject.next({
+            id: user._id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            photoUrl: user.photoUrl || '',
+          });
+        },
+        error: (error) => {
+          console.error('Erreur lors de la récupération des détails utilisateur:', error);
+        },
+      });
+  }
 
   getToken(): string | null {
-    const token = localStorage.getItem(this.tokenKey);
-    // console.log('getToken called, returning:', token ? 'token exists' : 'no token');
-    return token;
+    return localStorage.getItem(this.tokenKey);
   }
 
   getUserName(): string | null {
-    const token = this.getToken();
-    if (!token) return null;
-    const decoded: any = jwtDecode(token);
-    return decoded.lastName + ' ' + decoded.firstName;
+    const user = this.currentUserSubject.value;
+    if (!user) {
+      return null;
+    }
+    return `${user.lastName} ${user.firstName}`;
   }
 
-  setUserFromToken(token: string) {
+  private setUserFromToken(token: string): void {
     try {
       const decoded: any = jwtDecode(token);
       this.currentUserSubject.next({
@@ -85,18 +84,23 @@ public user$ = this.currentUserSubject.asObservable();
         lastName: decoded.lastName,
         photoUrl: decoded.photoUrl || '',
       });
-      console.log('Utilisateur mis à jour dans AuthService:', decoded);
     } catch (error) {
       console.error('Erreur lors du décodage du token:', error);
       this.currentUserSubject.next(null);
     }
   }
 
-  getUser(): any | null {
+  private getUserFromToken(): any | null {
     const token = this.getToken();
-    if (!token) return null;
-    const decoded: any = jwtDecode(token);
-    return decoded;
+    if (!token) {
+      return null;
+    }
+    try {
+      return jwtDecode(token);
+    } catch (error) {
+      console.error('Erreur lors du décodage du token:', error);
+      return null;
+    }
   }
 
   updateProfile(data: FormData): Observable<any> {
@@ -105,15 +109,14 @@ public user$ = this.currentUserSubject.asObservable();
       return throwError(() => new Error('Aucun token disponible'));
     }
 
-    const headers = {
-      Authorization: `Bearer ${token}`,
-    };
-
-    return this.http.put(`${this.apiUrl}/update-profile`, data, { headers }).pipe(
+    return this.http.put(`${this.apiUrl}/api/profile/update-profile`, data, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).pipe(
       tap((response: any) => {
         if (response.token) {
+          localStorage.setItem(this.tokenKey, response.token);
           this.setUserFromToken(response.token);
-          console.log('Token et données utilisateur mis à jour:', response);
+          this.fetchUserDetails(response.email, response.token);
         }
       }),
       catchError(error => {
@@ -128,11 +131,13 @@ public user$ = this.currentUserSubject.asObservable();
   }
 
   logout(): void {
-    if (this.isLoggingOut) return;
+    if (this.isLoggingOut) {
+      return;
+    }
 
     this.isLoggingOut = true;
-    // console.log('Logging out, removing token');
     localStorage.removeItem(this.tokenKey);
+    this.currentUserSubject.next(null);
 
     setTimeout(() => {
       this.router.navigate(['/login']);
