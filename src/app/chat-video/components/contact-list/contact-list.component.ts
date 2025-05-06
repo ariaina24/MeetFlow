@@ -3,6 +3,7 @@ import { User } from '../../models/user.model';
 import { MatListModule } from '@angular/material/list';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ChatService } from '../../services/chat.service';
 
 @Component({
   selector: 'app-contact-list',
@@ -20,6 +21,17 @@ export class ContactListComponent implements OnChanges {
   @Output() userSelected = new EventEmitter<User>();
 
   sortedContacts: User[] = [];
+
+  constructor(
+    private chatService: ChatService,
+  ) {}
+
+  ngOnInit(): void {
+    this.chatService.lastMessages$.subscribe(messages => {
+      this.lastMessages = [...messages];
+      this.sortContacts();
+    });
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['contacts'] || changes['lastMessages']) {

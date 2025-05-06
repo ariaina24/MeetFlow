@@ -20,6 +20,7 @@ import { ChatAreaComponent } from '../chat-area/chat-area.component';
 export class ChatVideoComponent implements OnInit, OnDestroy {
   @ViewChild('localVideo') localVideo!: ElementRef<HTMLVideoElement>;
   @ViewChild('remoteVideo') remoteVideo!: ElementRef<HTMLVideoElement>;
+  @ViewChild(ChatAreaComponent) chatAreaComponent!: ChatAreaComponent;
 
   user: User | null = null;
   selectedUser: User | null = null;
@@ -54,6 +55,10 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
             ? `http://localhost:3000${user.photoUrl}`
             : 'images/default-men.jpg',
         }));
+      this.contacts.forEach((contact) => {
+        this.chatService.joinPrivateChat(this.user!._id, contact._id);
+      });
+      this.chatService.refreshLastMessages();
     });
 
     this.chatService.fetchLastMessages().subscribe((messages) => {
@@ -72,6 +77,31 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
             ? `http://localhost:3000${user.photoUrl}`
             : 'images/default-men.jpg',
         };
+      }
+    });
+
+    this.chatService.onPrivateMessageReceived((data) => {
+      const updatedMessages = [...this.lastMessages.filter(m => m.contactId !== data.senderId)];
+
+      updatedMessages.push({
+        contactId: data.senderId,
+        lastMessage: data.message,
+        time: data.time,
+      });
+
+      updatedMessages.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+
+      // Mettre à jour lastMessages et propager via ChatService
+      this.lastMessages = [...updatedMessages];
+      this.chatService.updateLastMessages([...updatedMessages]);
+
+      // Pousser le message uniquement si l'utilisateur est dans le chat actif
+      if (this.selectedUser?._id === data.senderId) {
+        this.chatAreaComponent?.pushMessage({
+          text: data.message,
+          time: new Date(data.time),
+          isSent: false,
+        });
       }
     });
   }

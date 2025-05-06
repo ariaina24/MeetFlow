@@ -47,6 +47,15 @@ const setupSocket = (io) => {
       const chatId = [userId1, userId2].sort().join('-');
       socket.join(chatId);
     });
+
+    socket.on('privateMessage', ({ senderId, receiverId, message }) => {
+      const room = [senderId, receiverId].sort().join('-');
+      io.to(room).emit('privateMessage', {
+        senderId,
+        message,
+        time: new Date(),
+      });
+    });
   });
 };
 

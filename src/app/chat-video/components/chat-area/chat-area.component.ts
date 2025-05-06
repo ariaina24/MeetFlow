@@ -45,7 +45,7 @@ export class ChatAreaComponent implements AfterViewInit, OnDestroy {
     if (this.selectedUser) {
       this.loadMessages();
       this.chatService.onPrivateMessageReceived((data) => {
-        if (data.senderId !== this.user?._id) {
+        if (data.senderId === this.selectedUser?._id && data.senderId !== this.user?._id) {
           this.messages.push({
             text: data.message,
             time: new Date(data.time),
@@ -104,6 +104,12 @@ export class ChatAreaComponent implements AfterViewInit, OnDestroy {
     } else {
       this.lastMessages.push({ contactId, lastMessage: message, time });
     }
+  }
+
+  pushMessage(message: { text: string; time: Date; isSent: boolean }) {
+    this.messages.push(message);
+    this.groupedMessages = this.chatService.groupMessagesByDate(this.messages);
+    this.scrollToBottom();
   }
 
   scrollToBottom(): void {

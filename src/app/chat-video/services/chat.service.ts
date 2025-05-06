@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, of } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, of } from 'rxjs';
 import { Message, GroupedMessage, ApiMessage } from '../models/message.model';
 import { User } from '../models/user.model';
 import { SocketService } from '../../shared/socket.service';
@@ -11,6 +11,8 @@ import { AuthService } from '../../shared/auth.service';
 })
 export class ChatService {
   private apiUrl = 'http://localhost:3000';
+  private lastMessagesSubject = new BehaviorSubject<any[]>([]);
+  lastMessages$ = this.lastMessagesSubject.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -82,5 +84,15 @@ export class ChatService {
 
   joinPrivateChat(senderId: string, receiverId: string): void {
     this.socketService.joinPrivateChat(senderId, receiverId);
+  }
+
+  refreshLastMessages(): void {
+    this.fetchLastMessages().subscribe(messages => {
+      this.updateLastMessages(messages);
+    });
+  }
+
+  updateLastMessages(messages: any[]) {
+    this.lastMessagesSubject.next(messages);
   }
 }
