@@ -87,22 +87,28 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
         contactId: data.senderId,
         lastMessage: data.message,
         time: data.time,
+        isRead: data.isRead, // Respecter la valeur isRead du serveur
       });
 
       updatedMessages.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
 
-      // Mettre à jour lastMessages et propager via ChatService
       this.lastMessages = [...updatedMessages];
       this.chatService.updateLastMessages([...updatedMessages]);
 
-      // Pousser le message uniquement si l'utilisateur est dans le chat actif
-      if (this.selectedUser?._id === data.senderId) {
+      // Ajouter le message au chat actif uniquement si c'est un message reçu (non envoyé par l'utilisateur)
+      if (this.selectedUser?._id === data.senderId && data.senderId !== this.user?._id) {
         this.chatAreaComponent?.pushMessage({
           text: data.message,
           time: new Date(data.time),
           isSent: false,
         });
       }
+    });
+
+    this.chatService.lastMessages$.subscribe(messages => {
+      this.lastMessages = messages;
+      this.sortContactsByLastMessage();
+      this.contacts = [...this.contacts];
     });
   }
 
@@ -111,6 +117,9 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
   selectUser(user: User): void {
     this.selectedUser = user;
     this.chatService.joinPrivateChat(this.user!._id, user._id);
+    this.chatService.markMessagesAsRead(user._id).subscribe(() => {
+      this.chatService.refreshLastMessages();
+    });
   }
 
   openProfileModal(): void {
@@ -132,5 +141,6 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
       const timeB = msgB ? new Date(msgB.time).getTime() : 0;
       return timeB - timeA;
     });
+    this.contacts = [...this.contacts];
   }
 }

@@ -21,40 +21,51 @@ const setupSocket = (io) => {
       socket.to(roomId).emit('receive-message', message);
     });
 
-    socket.on('send-private-message', async (senderId, receiverId, message) => {
+    socket.on('join-private-chat', (userId1, userId2) => {
+      const chatId = [userId1, userId2].sort().join('-');
+      socket.join(chatId);
+    });
+
+    socket.on('send-private-message', async (data) => {
       try {
+        const { senderId, receiverId, message } = data;
+
+        // Valider les champs requis
+        if (!senderId || !receiverId || !message) {
+          console.error('Missing required fields:', { senderId, receiverId, message });
+          return;
+        }
+
         const chatId = [senderId, receiverId].sort().join('-');
         const newMessage = new Message({
           senderId,
           receiverId,
           text: message,
           time: new Date(),
+          isRead: false, // Non lu par défaut pour le destinataire
         });
         await newMessage.save();
 
+        // Émettre le message avec isRead adapté pour chaque utilisateur
         io.to(chatId).emit('receive-private-message', {
           senderId,
           receiverId,
           message,
           time: newMessage.time,
+          isRead: false, // Non lu pour le destinataire
+        });
+
+        // Pour l'expéditeur, émettre avec isRead: true
+        io.to(senderId).emit('receive-private-message', {
+          senderId,
+          receiverId,
+          message,
+          time: newMessage.time,
+          isRead: true, // Lu pour l'expéditeur
         });
       } catch (error) {
         console.error('Error saving message:', error);
       }
-    });
-
-    socket.on('join-private-chat', (userId1, userId2) => {
-      const chatId = [userId1, userId2].sort().join('-');
-      socket.join(chatId);
-    });
-
-    socket.on('privateMessage', ({ senderId, receiverId, message }) => {
-      const room = [senderId, receiverId].sort().join('-');
-      io.to(room).emit('privateMessage', {
-        senderId,
-        message,
-        time: new Date(),
-      });
     });
   });
 };

@@ -21,7 +21,7 @@ import { JoinCallComponent } from "../join-call/join-call.component";
     MatIconModule,
     MessageInputComponent,
     JoinCallComponent
-],
+  ],
   templateUrl: './chat-area.component.html',
   styleUrls: ['./chat-area.component.css'],
 })
@@ -51,7 +51,7 @@ export class ChatAreaComponent implements AfterViewInit, OnDestroy {
             time: new Date(data.time),
             isSent: false,
           });
-          this.updateLastMessage(data.senderId, data.message, data.time);
+          this.updateLastMessage(data.senderId, data.message, data.time, data.isRead);
           this.groupedMessages = this.chatService.groupMessagesByDate(this.messages);
           this.scrollToBottom();
         }
@@ -59,9 +59,7 @@ export class ChatAreaComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    // Cleanup if necessary
-  }
+  ngOnDestroy(): void {}
 
   loadMessages(): void {
     if (!this.selectedUser || !this.user) return;
@@ -89,21 +87,23 @@ export class ChatAreaComponent implements AfterViewInit, OnDestroy {
         isSent: true,
       };
       this.messages.push(message);
-      this.updateLastMessage(this.selectedUser._id, message.text, message.time);
+      this.updateLastMessage(this.selectedUser._id, message.text, message.time, true); // Marquer comme lu pour l'expéditeur
       this.chatService.sendMessage(this.user._id, this.selectedUser._id, text);
       this.groupedMessages = this.chatService.groupMessagesByDate(this.messages);
       this.scrollToBottom();
     }
   }
 
-  updateLastMessage(contactId: string, message: string, time: Date | string): void {
+  updateLastMessage(contactId: string, message: string, time: Date | string, isRead: boolean): void {
     const existing = this.lastMessages.find((m) => m.contactId === contactId);
     if (existing) {
       existing.lastMessage = message;
       existing.time = time;
+      existing.isRead = isRead;
     } else {
-      this.lastMessages.push({ contactId, lastMessage: message, time });
+      this.lastMessages.push({ contactId, lastMessage: message, time, isRead });
     }
+    this.chatService.updateLastMessages([...this.lastMessages]);
   }
 
   pushMessage(message: { text: string; time: Date; isSent: boolean }) {

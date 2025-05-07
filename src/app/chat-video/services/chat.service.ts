@@ -86,13 +86,31 @@ export class ChatService {
     this.socketService.joinPrivateChat(senderId, receiverId);
   }
 
+  updateLastMessages(messages: any[]) {
+    this.lastMessagesSubject.next(messages);
+  }
+
   refreshLastMessages(): void {
     this.fetchLastMessages().subscribe(messages => {
       this.updateLastMessages(messages);
     });
   }
 
-  updateLastMessages(messages: any[]) {
-    this.lastMessagesSubject.next(messages);
+  markMessagesAsRead(contactId: string): Observable<any> {
+    const token = this.authService.getToken();
+    return this.http
+      .post(
+        `${this.apiUrl}/api/messages/mark-as-read`,
+        { contactId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+      .pipe(
+        catchError((error) => {
+          console.error('Error marking messages as read:', error);
+          return of(null);
+        })
+      );
   }
 }

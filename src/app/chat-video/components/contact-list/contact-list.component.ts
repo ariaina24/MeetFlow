@@ -52,16 +52,22 @@ export class ContactListComponent implements OnChanges {
   }
 
   selectUser(user: User): void {
+    this.chatService.markMessagesAsRead(user._id);
     this.userSelected.emit(user);
   }
 
   getLastMessage(userId: string): string {
     const lastMessage = this.lastMessages.find((msg) => msg.contactId === userId);
-    return lastMessage ? lastMessage.lastMessage : 'No messages yet';
+    return lastMessage ? lastMessage.lastMessage : 'Aucun message';
   }
 
   getLastMessageTime(userId: string): string {
     const lastMessage = this.lastMessages.find((msg) => msg.contactId === userId);
     return lastMessage ? new Date(lastMessage.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+  }
+
+  isMessageUnread(userId: string): boolean {
+    const lastMessage = this.lastMessages.find((msg) => msg.contactId === userId);
+    return lastMessage ? !lastMessage.isRead : false;
   }
 }

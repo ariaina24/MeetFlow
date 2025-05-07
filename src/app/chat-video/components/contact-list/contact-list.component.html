@@ -6,7 +6,7 @@
   >
     <div>
       <div mat-line class="contact-name">{{ user.lastName }} {{ user.firstName }}</div>
-      <div mat-line class="contact-message">
+      <div mat-line class="contact-message" [ngClass]="{'unread': isMessageUnread(user._id)}">
         {{ getLastMessage(user._id) || 'Aucun message' }}
         <span class="timestamp" *ngIf="getLastMessageTime(user._id)">{{ getLastMessageTime(user._id) }}</span>
       </div>

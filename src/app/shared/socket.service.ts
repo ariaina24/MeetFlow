@@ -27,11 +27,11 @@ export class SocketService {
 
   // Envoyer un message privé
   sendPrivateMessage(senderId: string, receiverId: string, message: string): void {
-    this.socket.emit('send-private-message', senderId, receiverId, message);
+    this.socket.emit('send-private-message', { senderId, receiverId, message });
   }
 
   // Recevoir un message privé
-  onPrivateMessageReceived(callback: (message: { senderId: string; receiverId: string; message: string; time: string }) => void): void {
+  onPrivateMessageReceived(callback: (message: { senderId: string; receiverId: string; message: string; time: string; isRead: boolean }) => void): void {
     this.socket.on('receive-private-message', callback);
   }
 

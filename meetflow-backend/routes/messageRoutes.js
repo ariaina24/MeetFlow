@@ -61,6 +61,7 @@ router.get('/last-messages', authenticateToken, async (req, res) => {
           },
           lastMessage: { $first: '$text' },
           time: { $first: '$time' },
+          isRead: { $first: '$isRead' },
         },
       },
       {
@@ -81,6 +82,7 @@ router.get('/last-messages', authenticateToken, async (req, res) => {
           photoUrl: '$user.photoUrl',
           lastMessage: 1,
           time: 1,
+          isRead: 1,
         },
       },
       { $sort: { time: -1 } },
@@ -89,6 +91,22 @@ router.get('/last-messages', authenticateToken, async (req, res) => {
     res.json(lastMessages);
   } catch (error) {
     res.status(500).json({ error: 'Could not fetch last messages' });
+  }
+});
+
+router.post('/mark-as-read', authenticateToken, async (req, res) => {
+  try {
+    const { contactId } = req.body;
+    const userId = req.user.id;
+
+    await Message.updateMany(
+      { senderId: contactId, receiverId: userId, isRead: false },
+      { $set: { isRead: true } }
+    );
+
+    res.status(200).json({ message: 'Messages marked as read' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to mark messages as read', details: error.message });
   }
 });
 
