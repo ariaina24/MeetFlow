@@ -62,6 +62,8 @@ router.get('/last-messages', authenticateToken, async (req, res) => {
           lastMessage: { $first: '$text' },
           time: { $first: '$time' },
           isRead: { $first: '$isRead' },
+          senderId: { $first: '$senderId' },
+          receiverId: { $first: '$receiverId' },
         },
       },
       {
@@ -82,7 +84,18 @@ router.get('/last-messages', authenticateToken, async (req, res) => {
           photoUrl: '$user.photoUrl',
           lastMessage: 1,
           time: 1,
-          isRead: 1,
+          isRead: {
+            $cond: [
+              { $eq: ['$senderId', new mongoose.Types.ObjectId(userId)] },
+              true, // Messages envoyés par l'utilisateur sont toujours lus
+              { $cond: [
+                  { $eq: ['$receiverId', new mongoose.Types.ObjectId(userId)] },
+                  '$isRead', // Messages reçus conservent leur état isRead
+                  false // Par défaut, non lu pour le destinataire
+                ]
+              }
+            ],
+          },
         },
       },
       { $sort: { time: -1 } },

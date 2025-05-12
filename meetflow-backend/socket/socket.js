@@ -36,6 +36,12 @@ const setupSocket = (io) => {
           return;
         }
 
+        // Sécurité : vérifier que senderId correspond à l'utilisateur authentifié
+        if (senderId !== socket.userId) {
+          console.error('Unauthorized senderId:', senderId);
+          return;
+        }
+
         const chatId = [senderId, receiverId].sort().join('-');
         const newMessage = new Message({
           senderId,
@@ -46,7 +52,7 @@ const setupSocket = (io) => {
         });
         await newMessage.save();
 
-        // Émettre le message avec isRead adapté pour chaque utilisateur
+        // Émettre le message pour le destinataire avec isRead: false
         io.to(chatId).emit('receive-private-message', {
           senderId,
           receiverId,
@@ -55,7 +61,7 @@ const setupSocket = (io) => {
           isRead: false, // Non lu pour le destinataire
         });
 
-        // Pour l'expéditeur, émettre avec isRead: true
+        // Émettre pour l'expéditeur avec isRead: true
         io.to(senderId).emit('receive-private-message', {
           senderId,
           receiverId,

@@ -5,9 +5,9 @@
     (click)="selectUser(user)"
   >
     <div>
-      <div mat-line class="contact-name">{{ user.lastName }} {{ user.firstName }}</div>
+      <div mat-line class="contact-name" [ngClass]="{'unread': isMessageUnread(user._id)}">{{ user.lastName }} {{ user.firstName }}</div>
       <div mat-line class="contact-message" [ngClass]="{'unread': isMessageUnread(user._id)}">
-        {{ getLastMessage(user._id) || 'Aucun message' }}
+        {{ getLastMessage(user._id) }}
         <span class="timestamp" *ngIf="getLastMessageTime(user._id)">{{ getLastMessageTime(user._id) }}</span>
       </div>
     </div>

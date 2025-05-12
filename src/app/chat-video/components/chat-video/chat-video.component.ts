@@ -62,6 +62,7 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
     });
 
     this.chatService.fetchLastMessages().subscribe((messages) => {
+      console.log('Fetched last messages:', messages); // Log pour débogage
       this.lastMessages = messages;
       this.sortContactsByLastMessage();
     });
@@ -81,6 +82,7 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
     });
 
     this.chatService.onPrivateMessageReceived((data) => {
+      console.log('Received private message:', data); // Log pour débogage
       const updatedMessages = [...this.lastMessages.filter(m => m.contactId !== data.senderId)];
 
       updatedMessages.push({
