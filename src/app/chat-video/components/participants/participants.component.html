@@ -4,7 +4,13 @@
     id="video-{{ participant.sessionId }}"
     [attr.sessionId]="participant.sessionId"
     autoplay
+    [muted]="participant.isLocalParticipant"
   ></video>
-  <p>{{ participant.name }}</p>
-  <audio #audioElement id="audio-{{ participant.sessionId }}"></audio>
+  <p>{{ participant.name || participant.userId }}</p>
+  <audio
+    *ngIf="!participant.isLocalParticipant"
+    #audioElement
+    id="audio-{{ participant.sessionId }}"
+    autoplay
+  ></audio>
 </div>

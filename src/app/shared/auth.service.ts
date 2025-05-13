@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
+import { User } from '@stream-io/video-client';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -15,6 +17,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<any>(this.getUserFromToken());
   public user$ = this.currentUserSubject.asObservable();
 
+  private testStreamToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3Byb250by5nZXRzdHJlYW0uaW8iLCJzdWIiOiJ1c2VyL0dlbmVyYWxfQ3JpeF9NYWRpbmUiLCJ1c2VyX2lkIjoiR2VuZXJhbF9Dcml4X01hZGluZSIsInZhbGlkaXR5X2luX3NlY29uZHMiOjYwNDgwMCwiaWF0IjoxNzQ3MTM4OTIyLCJleHAiOjE3NDc3NDM3MjJ9.SA_MCi4iqsWIJJb-wFXcb7AUXSFmZnqZNpKS8Ro9N0o';
   constructor(private http: HttpClient, private router: Router) {}
 
   register(user: any): Observable<any> {
@@ -72,6 +75,32 @@ export class AuthService {
       return null;
     }
     return `${user.lastName} ${user.firstName}`;
+  }
+
+  getUser(): User {
+    const userToken = this.getToken();
+    const token = this.getStreamToken();
+    if (token && userToken) {
+      const decoded: any = jwtDecode(token);
+      const userDecoded: any = jwtDecode(userToken);
+      return {
+        id: decoded.user_id || decoded.sub.split('/')[1],
+        name: userDecoded.firstName ? `${userDecoded.firstName} ${userDecoded.lastName || ''}` : userDecoded.id
+      };
+    }
+    throw new Error('No user logged in');
+  }
+
+  getStreamToken(): string | undefined {
+    return this.testStreamToken;
+  }
+
+  fetchStreamToken(): Observable<string> {
+    return new Observable(observer => {
+      console.log('Using test Stream token:', this.testStreamToken);
+      observer.next(this.testStreamToken);
+      observer.complete();
+    });
   }
 
   private setUserFromToken(token: string): void {
@@ -137,6 +166,7 @@ export class AuthService {
 
     this.isLoggingOut = true;
     localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem('stream_token');
     this.currentUserSubject.next(null);
 
     setTimeout(() => {

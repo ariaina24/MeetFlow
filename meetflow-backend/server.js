@@ -1,7 +1,7 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import { Server } from 'socket.io';
-import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
@@ -9,6 +9,7 @@ import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
+import videoRoutes from './routes/videoRoutes.js';
 import setupSocket from './socket/socket.js';
 
 dotenv.config();
@@ -38,6 +39,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/stream', videoRoutes);
 
 app.use((err, req, res, next) => {
   console.error('Global error:', err);

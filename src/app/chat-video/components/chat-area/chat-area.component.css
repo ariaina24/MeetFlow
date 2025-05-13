@@ -20,6 +20,14 @@
   color: #333;
 }
 
+.video-call-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
 .empty-chat {
   display: flex;
   flex-direction: column;
@@ -31,6 +39,10 @@
   font-size: 16px;
   text-align: center;
   padding: 20px;
+}
+
+.animated-prompt {
+  animation: fadeIn 0.5s ease-in-out, bounce 1.2s infinite;
 }
 
 .profil-pic-header {
@@ -63,7 +75,7 @@
 .message-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   margin-bottom: 12px;
 }
 

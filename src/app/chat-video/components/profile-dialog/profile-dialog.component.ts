@@ -27,10 +27,8 @@ export class ProfileDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private authService: AuthService
   ) {
-    console.log('Données initiales MAT_DIALOG_DATA:', this.data);
     if (this.data?.photoUrl) {
       this.photoPreview = `${this.data.photoUrl}`;
-      console.log('photoPreview initialisé:', this.photoPreview);
     } else {
       console.log('Aucun photoUrl dans MAT_DIALOG_DATA');
     }
@@ -39,11 +37,6 @@ export class ProfileDialogComponent {
   onPhotoSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
-      console.log('Fichier sélectionné:', {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      });
       this.selectedPhoto = file;
 
       const reader = new FileReader();

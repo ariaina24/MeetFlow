@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { User } from '../../models/user.model';
 import { AuthService } from '../../../shared/auth.service';
+import { VideoService } from '../../services/video.service'; // Importer VideoService
+import { Router } from '@angular/router'; // Importer Router
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -34,9 +36,14 @@ export class SidebarComponent {
   @Output() openProfile = new EventEmitter<void>();
   @Output() logout = new EventEmitter<void>();
 
-  constructor(public authService: AuthService) {}
+  constructor(
+    public authService: AuthService,
+    private videoService: VideoService,
+    private router: Router
+  ) {}
 
   selectUser(user: User): void {
+    this.videoService.toggleVideoCall(false);
     this.userSelected.emit(user);
   }
 
@@ -46,5 +53,14 @@ export class SidebarComponent {
 
   onLogout(): void {
     this.logout.emit();
+  }
+
+  goToHome(): void {
+    this.videoService.toggleVideoCall(false);
+    this.router.navigate(['/']);
+  }
+
+  startVideoCall(): void {
+    this.videoService.toggleVideoCall(true);
   }
 }

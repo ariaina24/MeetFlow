@@ -1,38 +1,64 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { StreamVideoParticipant } from '@stream-io/video-client';
 import { VideoService } from '../../services/video.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-participants',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './participants.component.html',
-  styleUrl: './participants.component.css'
+  styleUrls: ['./participants.component.css']
 })
-export class ParticipantsComponent {
+export class ParticipantsComponent implements AfterViewInit, OnDestroy {
   @ViewChild('videoElement') videoElement!: ElementRef<HTMLVideoElement>;
   @ViewChild('audioElement') audioElement!: ElementRef<HTMLAudioElement>;
 
-  @Input() participant!: StreamVideoParticipant;
-  unbindVideoElement: (() => void) | undefined;
-  unbindAudioElement: (() => void) | undefined;
+  @Input({ required: true }) participant!: StreamVideoParticipant;
+
+  private unbindVideoElement: (() => void) | undefined;
+  private unbindAudioElement: (() => void) | undefined;
 
   constructor(private videoService: VideoService) {}
 
   ngAfterViewInit(): void {
-    this.unbindVideoElement = this.videoService
-      .call()
-      ?.bindVideoElement(
+    const call = this.videoService.call();
+    if (!call) {
+      console.error('No call available for binding media elements');
+      return;
+    }
+
+    const userId = this.videoService.getUserId();
+    if (this.participant.userId === userId) {
+      this.participant.isLocalParticipant = true;
+    }
+
+    console.log('Binding video for participant:', this.participant.userId, 'Session ID:', this.participant.sessionId);
+    console.log('Video element:', this.videoElement.nativeElement);
+
+    try {
+      this.unbindVideoElement = call.bindVideoElement(
         this.videoElement.nativeElement,
         this.participant.sessionId,
         'videoTrack'
       );
+      console.log('Video element bound successfully for', this.participant.userId);
+    } catch (error) {
+      console.error('Error binding video element for', this.participant.userId, ':', error);
+    }
 
-    this.unbindAudioElement = this.videoService
-      .call()
-      ?.bindAudioElement(
-        this.audioElement.nativeElement,
-        this.participant.sessionId
-      );
+    if (!this.participant.isLocalParticipant) {
+      console.log('Binding audio for remote participant:', this.participant.userId);
+      try {
+        this.unbindAudioElement = call.bindAudioElement(
+          this.audioElement.nativeElement,
+          this.participant.sessionId
+        );
+        console.log('Audio element bound successfully for', this.participant.userId);
+      } catch (error) {
+        console.error('Error binding audio element for', this.participant.userId, ':', error);
+      }
+    }
   }
 
   ngOnDestroy(): void {

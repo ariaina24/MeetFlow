@@ -1,13 +1,133 @@
-
 .join-section {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  background: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 0 auto;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 .join-call-form {
-  padding: 1.5rem;
-  background: white;
-  border-radius: 0.5rem;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+label {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
+
+.input-field {
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #6a0dad;
+  box-shadow: 0 0 5px rgba(106, 13, 173, 0.3);
+}
+
+.buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+.btn.primary {
+  background-color: #6a0dad;
+  color: white;
+}
+
+.btn.secondary {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn.copy {
+  background-color: #007bff;
+  padding: 6px 12px;
+  margin-left: 10px;
+}
+
+.btn.leave {
+  background-color: #dc3545;
+  color: white;
+  margin-top: 10px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.error {
+  color: #dc3545;
+  font-size: 14px;
+  text-align: center;
+}
+
+.call-id-info {
+  text-align: center;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.call-id-info p {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .join-section {
+    padding: 20px;
+    margin: 0 10px;
+  }
+
+  .input-field {
+    font-size: 14px;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
 }

@@ -9,10 +9,18 @@
     </button>
   </div>
 
-  <mat-form-field appearance="outline" class="search-field">
-    <mat-label>Enter name to search...</mat-label>
-    <input matInput>
-    <mat-icon matSuffix>search</mat-icon>
+  <div class="action-bar">
+    <button mat-icon-button class="action-btn" (click)="goToHome()">
+      <a href="/"><mat-icon>home</mat-icon></a>
+    </button>
+    <button mat-icon-button class="action-btn" (click)="startVideoCall()">
+      <mat-icon>videocam</mat-icon>
+    </button>
+  </div>
+
+  <mat-form-field appearance="outline" class="search-field modern-search">
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput placeholder="Rechercher un contact...">
   </mat-form-field>
 
   <app-contact-list

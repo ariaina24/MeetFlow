@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { User } from '../../models/user.model';
 import { MatDialog } from '@angular/material/dialog';
 import { ProfileDialogComponent } from '../profile-dialog/profile-dialog.component';
@@ -9,6 +9,8 @@ import { ChatService } from '../../services/chat.service';
 import { AuthService } from '../../../shared/auth.service';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { ChatAreaComponent } from '../chat-area/chat-area.component';
+import { VideoService } from '../../services/video.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-chat-video',
@@ -30,7 +32,10 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private chatService: ChatService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private videoService: VideoService,
+    private router: Router,
+    private cdr: ChangeDetectorRef // Injecter ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -62,7 +67,6 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
     });
 
     this.chatService.fetchLastMessages().subscribe((messages) => {
-      console.log('Fetched last messages:', messages); // Log pour débogage
       this.lastMessages = messages;
       this.sortContactsByLastMessage();
     });
@@ -82,14 +86,13 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
     });
 
     this.chatService.onPrivateMessageReceived((data) => {
-      console.log('Received private message:', data); // Log pour débogage
       const updatedMessages = [...this.lastMessages.filter(m => m.contactId !== data.senderId)];
 
       updatedMessages.push({
         contactId: data.senderId,
         lastMessage: data.message,
         time: data.time,
-        isRead: data.isRead, // Respecter la valeur isRead du serveur
+        isRead: data.isRead,
       });
 
       updatedMessages.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
@@ -97,7 +100,6 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
       this.lastMessages = [...updatedMessages];
       this.chatService.updateLastMessages([...updatedMessages]);
 
-      // Ajouter le message au chat actif uniquement si c'est un message reçu (non envoyé par l'utilisateur)
       if (this.selectedUser?._id === data.senderId && data.senderId !== this.user?._id) {
         this.chatAreaComponent?.pushMessage({
           text: data.message,
@@ -117,11 +119,13 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {}
 
   selectUser(user: User): void {
-    this.selectedUser = user;
+    this.selectedUser = { ...user };
+    this.videoService.toggleVideoCall(false);
     this.chatService.joinPrivateChat(this.user!._id, user._id);
     this.chatService.markMessagesAsRead(user._id).subscribe(() => {
       this.chatService.refreshLastMessages();
     });
+    this.cdr.detectChanges();
   }
 
   openProfileModal(): void {
@@ -144,5 +148,14 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
       return timeB - timeA;
     });
     this.contacts = [...this.contacts];
+  }
+
+  goToHome(): void {
+    this.videoService.toggleVideoCall(false);
+    this.router.navigate(['/']);
+  }
+
+  startVideoCall(): void {
+    this.videoService.toggleVideoCall(true);
   }
 }
