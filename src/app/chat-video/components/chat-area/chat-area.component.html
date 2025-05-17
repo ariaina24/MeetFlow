@@ -1,50 +1,42 @@
 <div class="chat-area">
-  <span *ngIf="!isVideoCallActive">
-    <div *ngIf="!selectedUser" class="empty-chat animated-prompt">
-      <h1 class="title">👋 Bienvenu sur <strong><span>MEET<span>FLOW</span></span> 🎥</strong></h1>
-      <p class="typing-effect">👈 Cliquez sur un contact pour commencer à discuter !</p>
-      <div class="wave-hand">👋</div>
+  <div *ngIf="!selectedUser" class="empty-chat animated-prompt">
+    <h1 class="title">👋 Bienvenu sur <strong><span>MEET<span>FLOW</span></span> 📩</strong></h1>
+    <p class="typing-effect">👈 Cliquez sur un contact pour commencer à discuter !</p>
+    <div class="wave-hand">👋</div>
+  </div>
+
+  <ng-container *ngIf="selectedUser">
+    <div class="chat-header">
+      <img [src]="selectedUser.photoUrl" alt="profil" class="profil-pic-header">
+      <h1>{{ selectedUser.lastName }} {{ selectedUser.firstName }}</h1>
+      <span class="status"></span>
     </div>
 
-    <ng-container *ngIf="selectedUser">
-      <div class="chat-header">
-        <img [src]="selectedUser.photoUrl" alt="profil" class="profil-pic-header">
-        <h1>{{ selectedUser.lastName }} {{ selectedUser.firstName }}</h1>
-        <span class="status"></span>
+    <div #scrollContainer class="messages-container">
+      <div *ngIf="selectedUser && messages.length === 0" class="empty-chat animated-prompt">
+        <p>💬 Vous n'avez pas encore échangé de messages avec <strong>{{ selectedUser.firstName }}</strong>.</p>
+        <p class="bounce-text">👉 Envoyez votre premier message pour commencer la discussion !</p>
+        <div class="wave-hand">👋</div>
       </div>
 
-      <div #scrollContainer class="messages-container">
-        <div *ngIf="selectedUser && messages.length === 0" class="empty-chat animated-prompt">
-          <p>💬 Vous n'avez pas encore échangé de messages avec <strong>{{ selectedUser.firstName }}</strong>.</p>
-          <p class="bounce-text">👉 Envoyez votre premier message pour commencer la discussion !</p>
-          <div class="wave-hand">👋</div>
-        </div>
-
-        <div *ngFor="let group of groupedMessages">
-          <div class="date-separator">{{ group.date }}</div>
-          <div *ngFor="let msg of group.messages" class="message-row" [ngClass]="{'sent': msg.isSent}">
-            <div class="message-avatar" *ngIf="!msg.isSent">
-              <img [src]="selectedUser.photoUrl" alt="profil" class="profil-pic">
+      <div *ngFor="let group of groupedMessages">
+        <div class="date-separator">{{ group.date }}</div>
+        <div *ngFor="let msg of group.messages" class="message-row" [ngClass]="{'sent': msg.isSent}">
+          <div class="message-avatar" *ngIf="!msg.isSent">
+            <img [src]="selectedUser.photoUrl" alt="profil" class="profil-pic">
+          </div>
+          <div class="message-wrapper" [ngClass]="{'sent': msg.isSent}">
+            <div class="message" [ngClass]="{'sent': msg.isSent}">
+              {{ msg.text }}
             </div>
-            <div class="message-wrapper" [ngClass]="{'sent': msg.isSent}">
-              <div class="message" [ngClass]="{'sent': msg.isSent}">
-                {{ msg.text }}
-              </div>
-              <div class="timestamp">
-                {{ msg.time | date:'shortTime' }}
-              </div>
+            <div class="timestamp">
+              {{ msg.time | date:'shortTime' }}
             </div>
           </div>
         </div>
       </div>
-
-      <app-message-input (messageSent)="sendMessage($event)"></app-message-input>
-    </ng-container>
-  </span>
-
-  <div *ngIf="isVideoCallActive" class="video-call-container">
-    <div class="animated-prompt">
-      <app-join-call></app-join-call>
     </div>
-  </div>
+
+    <app-message-input (messageSent)="sendMessage($event)"></app-message-input>
+  </ng-container>
 </div>

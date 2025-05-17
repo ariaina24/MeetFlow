@@ -9,7 +9,6 @@ import { ChatService } from '../../services/chat.service';
 import { AuthService } from '../../../shared/auth.service';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { ChatAreaComponent } from '../chat-area/chat-area.component';
-import { VideoService } from '../../services/video.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -33,7 +32,6 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private chatService: ChatService,
     private dialog: MatDialog,
-    private videoService: VideoService,
     private router: Router,
     private cdr: ChangeDetectorRef // Injecter ChangeDetectorRef
   ) {}
@@ -120,7 +118,6 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
 
   selectUser(user: User): void {
     this.selectedUser = { ...user };
-    this.videoService.toggleVideoCall(false);
     this.chatService.joinPrivateChat(this.user!._id, user._id);
     this.chatService.markMessagesAsRead(user._id).subscribe(() => {
       this.chatService.refreshLastMessages();
@@ -151,11 +148,6 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
   }
 
   goToHome(): void {
-    this.videoService.toggleVideoCall(false);
     this.router.navigate(['/']);
-  }
-
-  startVideoCall(): void {
-    this.videoService.toggleVideoCall(true);
   }
 }

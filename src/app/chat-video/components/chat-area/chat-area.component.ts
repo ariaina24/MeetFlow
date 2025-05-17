@@ -8,9 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MessageInputComponent } from '../message-input/message-input.component';
-import { JoinCallComponent } from "../join-call/join-call.component";
 import { Subscription } from 'rxjs';
-import { VideoService } from '../../services/video.service';
 
 @Component({
   selector: 'app-chat-area',
@@ -22,7 +20,6 @@ import { VideoService } from '../../services/video.service';
     MatButtonModule,
     MatIconModule,
     MessageInputComponent,
-    JoinCallComponent
   ],
   templateUrl: './chat-area.component.html',
   styleUrls: ['./chat-area.component.css'],
@@ -33,11 +30,11 @@ export class ChatAreaComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input()
   set selectedUser(user: User | null) {
     this._selectedUser = user;
-    if (user && !this.isVideoCallActive) {
+    if (user) {
       this.loadMessages();
       this.setupMessageListener();
-    } else if (!user && !this.isVideoCallActive) {
-      this.messages = []; // Réinitialiser les messages si aucun utilisateur n'est sélectionné
+    } else {
+      this.messages = [];
       this.groupedMessages = [];
     }
   }
@@ -50,36 +47,18 @@ export class ChatAreaComponent implements OnInit, AfterViewInit, OnDestroy {
   messages: Message[] = [];
   groupedMessages: GroupedMessage[] = [];
   errorMessage: string | null = null;
-  isVideoCallActive: boolean = false;
   private subscription: Subscription = new Subscription();
 
-  constructor(
-    private chatService: ChatService,
-    private videoService: VideoService,
-  ) {}
+  constructor(private chatService: ChatService) {}
 
-  ngOnInit(): void {
-    this.subscription.add(
-      this.videoService.isVideoCallActive$.subscribe(isActive => {
-        this.isVideoCallActive = isActive;
-        if (isActive) {
-          this._selectedUser = null; // Désélectionner l'utilisateur en mode vidéo
-          this.messages = []; // Réinitialiser les messages
-          this.groupedMessages = [];
-        } else if (this._selectedUser) {
-          this.loadMessages(); // Recharger les messages si un utilisateur est sélectionné
-          this.setupMessageListener();
-        }
-      })
-    );
-  }
+  ngOnInit(): void {}
 
   ngAfterViewInit(): void {
     this.scrollToBottom();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['selectedUser'] && !this.isVideoCallActive) {
+    if (changes['selectedUser']) {
       const newUser = changes['selectedUser'].currentValue;
       if (newUser) {
         this.loadMessages();
@@ -90,13 +69,13 @@ export class ChatAreaComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     if (changes['lastMessages']) {
-      this.updateLastMessageBasedOnInput(); // Mettre à jour les messages si lastMessages change
+      this.updateLastMessageBasedOnInput();
     }
   }
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
-    this.chatService.onPrivateMessageReceived(() => {}); // Nettoyer l'écouteur
+    this.chatService.onPrivateMessageReceived(() => {});
   }
 
   private setupMessageListener(): void {
@@ -116,7 +95,7 @@ export class ChatAreaComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private updateLastMessageBasedOnInput(): void {
     if (this._selectedUser && this.lastMessages.length > 0) {
-      const lastMsg = this.lastMessages.find(m => m.contactId === this._selectedUser?._id);
+      const lastMsg = this.lastMessages.find((m) => m.contactId === this._selectedUser?._id);
       if (lastMsg && this.messages.length === 0) {
         this.messages.push({
           text: lastMsg.lastMessage,
@@ -143,7 +122,7 @@ export class ChatAreaComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (err) => {
         this.errorMessage = 'Failed to load messages: ' + err.message;
-        console.error('Error loading messages:', err); // Log pour déboguer
+        console.error('Error loading messages:', err);
       },
     });
   }
