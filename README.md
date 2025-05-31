@@ -23,6 +23,33 @@
 
 ---
 
+## ⚙️ Lancer le projet
+
+### 1. Prérequis
+
+- Node.js v18+
+- Angular CLI
+- MongoDB local ou distant
+
+### 2. Backend
+
+```bash
+cd meetflow-backend
+npm install
+node server.js
+````
+
+### 3. Frontend
+
+```bash
+npm install
+ng serve
+```
+
+Accéder à l’app : [http://localhost:4200](http://localhost:4200)
+
+---
+
 ## 🔐 Authentification
 
 - Inscription avec prénom, nom, email, mot de passe
@@ -85,35 +112,6 @@ Une fois connecté, l’utilisateur accède à la page d’accueil avec :
 ![Créer ou rejoindre une salle](public/capture_ecran/creer_rejoindre_salle.png)
 ![Créer une salle](public/capture_ecran/creer_salle.png)
 ![Appel vidéo](public/capture_ecran/appel.png)
-
----
-
-## ⚙️ Lancer le projet
-
-### 1. Prérequis
-
-- Node.js v18+
-- Angular CLI
-- MongoDB local ou distant
-
-### 2. Backend
-
-```bash
-cd meetflow-backend
-npm install
-node server.js
-````
-
-### 3. Frontend
-
-```bash
-npm install
-ng serve
-```
-
-Accéder à l’app : [http://localhost:4200](http://localhost:4200)
-
----
 
 ## ✨ Fonctionnalités principales
 
