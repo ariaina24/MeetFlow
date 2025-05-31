@@ -1,59 +1,132 @@
-# MyApp
+# 🎥 MeetFlow - Application de messagerie et visioconférence en temps réel
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.1.8.
+**MeetFlow** est une application Angular/Node.js permettant de :
 
-## Development server
+- discuter en temps réel via un système de messagerie privée,
+- rejoindre ou créer une salle de visioconférence,
+- gérer son profil utilisateur.
 
-To start a local development server, run:
+## 🚀 Technologies utilisées
+
+### Frontend
+
+- Angular 17
+- Angular Material
+- Socket.io-client
+
+### Backend
+
+- Node.js + Express
+- MongoDB avec Mongoose
+- Socket.io (serveur)
+- JWT pour l’authentification
+
+---
+
+## 🔐 Authentification
+
+- Inscription avec prénom, nom, email, mot de passe
+- Connexion sécurisée via JWT
+- Gestion de session (connexion/déconnexion)
+
+📷 _Capture écran - Inscription et Connexion :_
+
+![Inscription](public/capture_ecran/inscription.png)
+![Connexion](public/capture_ecran/login.png)
+
+---
+
+## 🏠 Accueil
+
+Une fois connecté, l’utilisateur accède à la page d’accueil avec :
+
+- son profil
+- une barre latérale avec ses contacts
+- la dernière conversation
+
+📷 _Capture écran - Accueil :_
+
+![Accueil](public/capture_ecran/accueil.png)
+
+---
+
+## 💬 Messagerie
+
+- Liste des contacts
+- Affichage des dernières conversations
+- Envoi de messages en temps réel avec Socket.io
+- Recherche de contact
+
+📷 _Capture écran - Nouvelle conversation et chat :_
+
+![Nouveau message](public/capture_ecran/nouveau_msg.png)
+![Conversation](public/capture_ecran/conversation.png)
+
+---
+
+## 🧑‍💼 Profil
+
+- Affichage des infos personnelles
+- Modification de l’image de profil et des informations
+
+📷 _Capture écran - Modification du profil :_
+
+![Profil](public/capture_ecran/modif_profil.png)
+
+---
+
+## 📹 Visioconférence
+
+- Création ou saisie d’un code de salle
+- Rejoint la salle et partage vidéo/audio avec d’autres participants
+
+📷 _Capture écran - Création et appel vidéo :_
+
+![Créer ou rejoindre une salle](public/capture_ecran/creer_rejoindre_salle.png)
+![Créer une salle](public/capture_ecran/creer_salle.png)
+![Appel vidéo](public/capture_ecran/appel.png)
+
+---
+
+## ⚙️ Lancer le projet
+
+### 1. Prérequis
+
+- Node.js v18+
+- Angular CLI
+- MongoDB local ou distant
+
+### 2. Backend
 
 ```bash
+cd meetflow-backend
+npm install
+node server.js
+````
+
+### 3. Frontend
+
+```bash
+npm install
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Accéder à l’app : [http://localhost:4200](http://localhost:4200)
 
-## Code scaffolding
+---
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## ✨ Fonctionnalités principales
 
-```bash
-ng generate component component-name
-```
+- Authentification sécurisée
+- Liste de contacts avec dernière activité
+- Messagerie temps réel
+- Appels vidéo via WebRTC/Socket.io
+- Gestion de profil utilisateur
+- Recherche de contact
+- UX moderne avec Angular Material
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+---
 
-```bash
-ng generate --help
-```
+## 📌 Auteur
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- **Ariaina** – Étudiant en \[Génie Logiciel]
