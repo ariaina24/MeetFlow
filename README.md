@@ -127,4 +127,5 @@ Une fois connecté, l’utilisateur accède à la page d’accueil avec :
 
 ## 📌 Auteur
 
-- **Ariaina** – Étudiant en \[Génie Logiciel]
+- **ANDRIAMBOAVONJY Njiva Ariaina** – Étudiant en \[Génie Logiciel]
+- Matricule: **28/LA/24-25**
