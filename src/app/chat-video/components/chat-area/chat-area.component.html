@@ -1,11 +1,11 @@
 <div class="chat-area">
-  <div *ngIf="!selectedUser" class="empty-chat animated-prompt">
+  <div *ngIf="!selectedUser && !isVideoCallActive && !showVideoCallInterface" class="empty-chat animated-prompt">
     <h1 class="title">👋 Bienvenu sur <strong><span>MEET<span>FLOW</span></span> 📩</strong></h1>
     <p class="typing-effect">👈 Cliquez sur un contact pour commencer à discuter !</p>
     <div class="wave-hand">👋</div>
   </div>
 
-  <ng-container *ngIf="selectedUser">
+  <ng-container *ngIf="selectedUser && !isVideoCallActive && !showVideoCallInterface">
     <div class="chat-header">
       <img [src]="selectedUser.photoUrl" alt="profil" class="profil-pic-header">
       <h1>{{ selectedUser.lastName }} {{ selectedUser.firstName }}</h1>
@@ -39,4 +39,31 @@
 
     <app-message-input (messageSent)="sendMessage($event)"></app-message-input>
   </ng-container>
+
+  <div *ngIf="showVideoCallInterface && !isVideoCallActive" class="video-call-container">
+    <div class="video-room-controls">
+      <button matButton="filled" class="create-room-button" (click)="createVideoRoom()">
+        Créer une salle
+      </button>
+      <p>ou</p>
+      <div class="room-join-form">
+        <mat-form-field appearance="outline" class="room-input">
+          <mat-label>Rejoindre une salle</mat-label>
+          <input matInput [(ngModel)]="roomIdInput" placeholder="ID de la salle">
+        </mat-form-field>
+        <button matButton="filled" class="join-button" (click)="joinVideoRoom()">
+          🔗 Rejoindre
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isVideoCallActive" class="video-call-container">
+    <app-video-conference
+      [user]="user"
+      [selectedUser]="selectedUser"
+      [roomId]="roomId"
+      (videoCallEnded)="stopVideoCall()"
+    ></app-video-conference>
+  </div>
 </div>

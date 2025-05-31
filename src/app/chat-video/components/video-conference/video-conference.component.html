@@ -1,0 +1,32 @@
+<div class="video-call-container">
+  <!-- En-tête avec bouton quitter -->
+  <div class="video-header">
+    <h2>Vidéoconférence <span *ngIf="roomId">- Salle {{ roomId }}</span></h2>
+    <button mat-icon-button color="warn" (click)="stopVideoCall()" class="end-call-button" matTooltip="Quitter l'appel">
+      <mat-icon>call_end</mat-icon>
+    </button>
+  </div>
+
+  <div class="video-container">
+    <div class="video-wrapper">
+      <video #localVideoElement autoplay muted playsinline class="video-box local-video"></video>
+    </div>
+  </div>
+
+  <div class="room-id-display" *ngIf="roomId">
+      <button *ngIf="selectedUser" mat-raised-button color="primary" (click)="sendRoomIdToContact()">
+        Envoyer l'id de la salle à {{ selectedUser.firstName }}
+      </button>
+    </div>
+
+  <div class="room-id-box">
+    <span><strong>Salle ID:</strong> {{ roomId }}</span>
+    <button class="copy-button" (click)="copyRoomId()">Copier l'ID</button>
+  </div>
+
+  <!-- Toast -->
+  <div *ngIf="showToast" class="toast">ID copié !</div>
+
+  <!-- Erreur -->
+  <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+</div>

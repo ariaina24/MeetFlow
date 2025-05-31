@@ -34,6 +34,7 @@ export class SidebarComponent {
   @Output() userSelected = new EventEmitter<User>();
   @Output() openProfile = new EventEmitter<void>();
   @Output() logout = new EventEmitter<void>();
+  @Output() startVideoCall = new EventEmitter<void>();
 
   constructor(
     public authService: AuthService,
@@ -54,5 +55,9 @@ export class SidebarComponent {
 
   goToHome(): void {
     this.router.navigate(['/']);
+  }
+
+  onStartVideoCall(): void {
+    this.startVideoCall.emit();
   }
 }

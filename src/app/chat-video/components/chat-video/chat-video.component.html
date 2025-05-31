@@ -7,11 +7,13 @@
       (userSelected)="selectUser($event)"
       (openProfile)="openProfileModal()"
       (logout)="logout()"
+      (startVideoCall)="showVideoCallControls()"
     ></app-sidebar>
     <app-chat-area
       [user]="user"
       [selectedUser]="selectedUser"
       [lastMessages]="lastMessages"
+      [showVideoCallInterface]="showVideoCallInterface"
     ></app-chat-area>
   </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { User } from '../../models/user.model';
 import { MatDialog } from '@angular/material/dialog';
 import { ProfileDialogComponent } from '../profile-dialog/profile-dialog.component';
@@ -10,30 +10,36 @@ import { AuthService } from '../../../shared/auth.service';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { ChatAreaComponent } from '../chat-area/chat-area.component';
 import { Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-chat-video',
   standalone: true,
-  imports: [CommonModule, MatSidenavModule, SidebarComponent, ChatAreaComponent],
+  imports: [
+    CommonModule,
+    MatSidenavModule,
+    SidebarComponent,
+    ChatAreaComponent,
+  ],
   templateUrl: './chat-video.component.html',
   styleUrls: ['./chat-video.component.css'],
 })
 export class ChatVideoComponent implements OnInit, OnDestroy {
-  @ViewChild('localVideo') localVideo!: ElementRef<HTMLVideoElement>;
-  @ViewChild('remoteVideo') remoteVideo!: ElementRef<HTMLVideoElement>;
   @ViewChild(ChatAreaComponent) chatAreaComponent!: ChatAreaComponent;
 
   user: User | null = null;
   selectedUser: User | null = null;
   contacts: User[] = [];
   lastMessages: any[] = [];
+  showVideoCallInterface: boolean = false; // New flag to show video call controls
 
   constructor(
     private authService: AuthService,
     private chatService: ChatService,
     private dialog: MatDialog,
     private router: Router,
-    private cdr: ChangeDetectorRef // Injecter ChangeDetectorRef
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -85,16 +91,13 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
 
     this.chatService.onPrivateMessageReceived((data) => {
       const updatedMessages = [...this.lastMessages.filter(m => m.contactId !== data.senderId)];
-
       updatedMessages.push({
         contactId: data.senderId,
         lastMessage: data.message,
         time: data.time,
         isRead: data.isRead,
       });
-
       updatedMessages.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-
       this.lastMessages = [...updatedMessages];
       this.chatService.updateLastMessages([...updatedMessages]);
 
@@ -125,15 +128,9 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  openProfileModal(): void {
-    this.dialog.open(ProfileDialogComponent, {
-      width: '400px',
-      data: this.user,
-    });
-  }
-
-  logout(): void {
-    this.authService.logout();
+  showVideoCallControls(): void {
+    this.showVideoCallInterface = true; // Show video call controls in ChatArea
+    this.cdr.detectChanges();
   }
 
   sortContactsByLastMessage(): void {
@@ -145,6 +142,17 @@ export class ChatVideoComponent implements OnInit, OnDestroy {
       return timeB - timeA;
     });
     this.contacts = [...this.contacts];
+  }
+
+  openProfileModal(): void {
+    this.dialog.open(ProfileDialogComponent, {
+      width: '400px',
+      data: this.user,
+    });
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 
   goToHome(): void {
