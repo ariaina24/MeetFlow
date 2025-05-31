@@ -57,7 +57,7 @@ export class AuthService {
 
   getUserName(): string | null {
     const user = this.currentUserSubject.value;
-    return user ? user.name : null;
+    return user ? user.firstName : null;
   }
 
   getUser(): any {
