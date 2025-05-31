@@ -10,6 +10,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { ContactListComponent } from '../contact-list/contact-list.component';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-sidebar',
@@ -23,6 +24,7 @@ import { ContactListComponent } from '../contact-list/contact-list.component';
     MatButtonModule,
     MatMenuModule,
     ContactListComponent,
+    FormsModule
   ],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css'],
@@ -35,6 +37,7 @@ export class SidebarComponent {
   @Output() openProfile = new EventEmitter<void>();
   @Output() logout = new EventEmitter<void>();
   @Output() startVideoCall = new EventEmitter<void>();
+  searchTerm: string = '';
 
   constructor(
     public authService: AuthService,
@@ -43,6 +46,16 @@ export class SidebarComponent {
 
   selectUser(user: User): void {
     this.userSelected.emit(user);
+  }
+
+  get filteredContacts(): User[] {
+    if (!this.searchTerm.trim()) {
+      return this.contacts;
+    }
+    const lowerSearch = this.searchTerm.toLowerCase();
+    return this.contacts.filter(contact =>
+      `${contact.firstName} ${contact.lastName}`.toLowerCase().includes(lowerSearch)
+    );
   }
 
   openProfileModal(): void {
